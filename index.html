@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>1817 Payout Calculator</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>1817 Payout Calculator</h1>
+      <div class="inputs">
+        <label>
+          Revenue ($)
+          <input id="revenue" type="number" min="0" step="10" value="0" />
+        </label>
+        <label>
+          Shares
+          <select id="shares">
+            <option value="10" selected>10</option>
+            <option value="5">5</option>
+            <option value="2">2</option>
+          </select>
+        </label>
+      </div>
+      <div class="results">
+        <div class="result result--full">
+          <span class="result__label">Full Pay</span>
+          <span class="result__value" id="result-full">—</span>
+        </div>
+        <div class="result result--half">
+          <span class="result__label">Half Pay</span>
+          <span class="result__value" id="result-half">—</span>
+        </div>
+        <div class="result result--withhold">
+          <span class="result__label">Withhold</span>
+          <span class="result__value" id="result-withhold">—</span>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
