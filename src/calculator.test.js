@@ -33,7 +33,17 @@ describe('halfPay', () => {
 })
 
 describe('withhold', () => {
-  it('always returns 0', () => {
-    expect(withhold()).toBe(0)
+  it('always returns 0 regardless of revenue or shares', () => {
+    expect(withhold(0, 10)).toBe(0)
+    expect(withhold(70, 10)).toBe(0)
+    expect(withhold(60, 5)).toBe(0)
+  })
+})
+
+describe('zero revenue', () => {
+  it('all functions return 0 when revenue is 0', () => {
+    expect(fullPay(0, 10)).toBe(0)
+    expect(halfPay(0, 10)).toBe(0)
+    expect(withhold(0, 10)).toBe(0)
   })
 })
