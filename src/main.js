@@ -9,6 +9,15 @@ function update() {
     return
   }
 
+  if (shares === 2) {
+    setResults(
+      `$${fullPay(revenue, shares) * shares} total`,
+      `$${halfPay(revenue, shares) * shares} total`,
+      `$${withhold()} total`
+    )
+    return
+  }
+
   setResults(
     `$${fullPay(revenue, shares)}/share`,
     `$${halfPay(revenue, shares)}/share`,
