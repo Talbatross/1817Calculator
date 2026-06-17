@@ -22,19 +22,32 @@
             <option value="2">2</option>
           </select>
         </label>
+        <label id="treasury-label">
+          Treasury shares
+          <input id="treasury" type="number" min="0" max="8" value="0" />
+        </label>
       </div>
       <div class="results" aria-live="polite" aria-atomic="true">
         <div class="result result--full">
           <span class="result__label">Full Pay</span>
-          <span class="result__value" id="result-full">—</span>
+          <div class="result__right">
+            <span class="result__value" id="result-full">—</span>
+            <span class="result__company" id="result-full-company"></span>
+          </div>
         </div>
         <div class="result result--half">
           <span class="result__label">Half Pay</span>
-          <span class="result__value" id="result-half">—</span>
+          <div class="result__right">
+            <span class="result__value" id="result-half">—</span>
+            <span class="result__company" id="result-half-company"></span>
+          </div>
         </div>
         <div class="result result--withhold">
           <span class="result__label">Withhold</span>
-          <span class="result__value" id="result-withhold">—</span>
+          <div class="result__right">
+            <span class="result__value" id="result-withhold">—</span>
+            <span class="result__company" id="result-withhold-company"></span>
+          </div>
         </div>
       </div>
     </main>
