@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { fullPay, halfPay, withhold } from './calculator.js'
+import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany } from './calculator.js'
 
 describe('fullPay', () => {
   it('divides revenue evenly by share count', () => {
@@ -45,5 +45,42 @@ describe('zero revenue', () => {
     expect(fullPay(0, 10)).toBe(0)
     expect(halfPay(0, 10)).toBe(0)
     expect(withhold(0, 10)).toBe(0)
+  })
+})
+
+describe('fullPayCompany', () => {
+  it('returns 0 when no treasury shares', () => {
+    expect(fullPayCompany(80, 10, 0)).toBe(0)
+  })
+  it('returns per-share dividend times treasury shares', () => {
+    expect(fullPayCompany(80, 10, 2)).toBe(16)
+    expect(fullPayCompany(60, 5, 1)).toBe(12)
+  })
+})
+
+describe('halfPayCompany', () => {
+  it('returns withheld amount when no treasury shares (10-share)', () => {
+    // $80: withheld = floor(80/20)*10 = $40
+    expect(halfPayCompany(80, 10, 0)).toBe(40)
+    // $70: withheld = floor(70/20)*10 = $30
+    expect(halfPayCompany(70, 10, 0)).toBe(30)
+  })
+  it('returns half revenue when no treasury shares (5-share)', () => {
+    expect(halfPayCompany(60, 5, 0)).toBe(30)
+  })
+  it('adds treasury share dividends to withheld (10-share)', () => {
+    // $80: withheld=$40, per-share=$4, treasury=2 → 40 + 4*2 = 48
+    expect(halfPayCompany(80, 10, 2)).toBe(48)
+  })
+  it('adds treasury share dividends to withheld (5-share)', () => {
+    // $60: withheld=$30, per-share=$6, treasury=1 → 30 + 6*1 = 36
+    expect(halfPayCompany(60, 5, 1)).toBe(36)
+  })
+})
+
+describe('withholdCompany', () => {
+  it('returns full revenue to company', () => {
+    expect(withholdCompany(80)).toBe(80)
+    expect(withholdCompany(0)).toBe(0)
   })
 })
