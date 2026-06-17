@@ -39,6 +39,7 @@ function updateTreasuryVisibility() {
   label.hidden = shares === 2
   if (shares === 2) {
     input.value = 0
+    input.max = 0
   } else {
     input.max = shares - 2
   }
