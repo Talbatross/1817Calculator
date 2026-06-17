@@ -3,7 +3,7 @@ import { getInputs, setResults, setCompanyResults } from './ui.js'
 
 function update() {
   const { revenue, shares, treasury } = getInputs()
-  const t = shares === 2 ? 0 : treasury
+  const t = shares === 2 ? 0 : Math.max(0, Math.min(Math.floor(treasury), shares - 2))
 
   if (!revenue) {
     setResults('—', '—', '—')
