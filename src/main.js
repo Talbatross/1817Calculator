@@ -42,6 +42,7 @@ function updateTreasuryVisibility() {
     input.max = 0
   } else {
     input.max = shares - 2
+    if (Number(input.value) > Number(input.max)) input.value = input.max
   }
 }
 
