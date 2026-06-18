@@ -59,7 +59,11 @@ document.getElementById('shares').addEventListener('change', () => {
   updateTreasuryVisibility()
   update()
 })
-document.getElementById('treasury').addEventListener('input', update)
+document.getElementById('treasury').addEventListener('input', () => {
+  const treasury = document.getElementById('treasury')
+  if (Number(treasury.value) > Number(treasury.max)) treasury.value = treasury.max
+  update()
+})
 document.getElementById('cash').addEventListener('input', update)
 document.getElementById('loans').addEventListener('input', () => {
   const loans = document.getElementById('loans')
