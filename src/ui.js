@@ -3,6 +3,9 @@ export function getInputs() {
     revenue: Number(document.getElementById('revenue').value),
     shares: Number(document.getElementById('shares').value),
     treasury: Number(document.getElementById('treasury').value),
+    cash: Number(document.getElementById('cash').value),
+    loans: Number(document.getElementById('loans').value),
+    rate: Number(document.getElementById('rate').value),
   }
 }
 
