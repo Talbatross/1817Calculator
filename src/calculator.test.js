@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany } from './calculator.js'
+import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest } from './calculator.js'
 
 describe('fullPay', () => {
   it('divides revenue evenly by share count', () => {
@@ -82,5 +82,21 @@ describe('withholdCompany', () => {
   it('returns full revenue to company', () => {
     expect(withholdCompany(80)).toBe(80)
     expect(withholdCompany(0)).toBe(0)
+  })
+})
+
+describe('interest', () => {
+  it('returns rate times number of loans', () => {
+    expect(interest(10, 3)).toBe(30)
+    expect(interest(35, 5)).toBe(175)
+    expect(interest(70, 10)).toBe(700)
+  })
+
+  it('returns 0 when rate is 0', () => {
+    expect(interest(0, 5)).toBe(0)
+  })
+
+  it('returns 0 when loans is 0', () => {
+    expect(interest(30, 0)).toBe(0)
   })
 })

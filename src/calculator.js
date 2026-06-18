@@ -26,3 +26,7 @@ export function halfPayCompany(revenue, shares, treasury) {
 export function withholdCompany(revenue) {
   return revenue
 }
+
+export function interest(rate, loans) {
+  return rate * loans
+}
