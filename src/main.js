@@ -2,7 +2,8 @@ import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCom
 import { getInputs, setResults, setCompanyResults } from './ui.js'
 
 function update() {
-  const { revenue, shares, treasury } = getInputs()
+  const { revenue: rawRevenue, shares, treasury } = getInputs()
+  const revenue = Math.floor(rawRevenue / 10) * 10
   const t = shares === 2 ? 0 : Math.max(0, Math.min(Math.floor(treasury) || 0, shares - 2))
 
   if (!revenue) {
