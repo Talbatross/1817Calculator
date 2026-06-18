@@ -1,10 +1,11 @@
-import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany } from './calculator.js'
+import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest } from './calculator.js'
 import { getInputs, setResults, setCompanyResults } from './ui.js'
 
 function update() {
-  const { revenue: rawRevenue, shares, treasury } = getInputs()
+  const { revenue: rawRevenue, shares, treasury, cash, loans, rate } = getInputs()
   const revenue = Math.floor(rawRevenue / 10) * 10
   const t = shares === 2 ? 0 : Math.max(0, Math.min(Math.floor(treasury) || 0, shares - 2))
+  const i = interest(rate, loans)
 
   if (!revenue) {
     setResults('—', '—', '—')
@@ -27,24 +28,29 @@ function update() {
   }
 
   setCompanyResults(
-    `$${fullPayCompany(revenue, shares, t)}`,
-    `$${halfPayCompany(revenue, shares, t)}`,
-    `$${withholdCompany(revenue)}`
+    `$${fullPayCompany(revenue, shares, t) + cash - i}`,
+    `$${halfPayCompany(revenue, shares, t) + cash - i}`,
+    `$${withholdCompany(revenue) + cash - i}`
   )
 }
 
 function updateTreasuryVisibility() {
   const shares = Number(document.getElementById('shares').value)
   const label = document.getElementById('treasury-label')
-  const input = document.getElementById('treasury')
+  const treasury = document.getElementById('treasury')
+  const loans = document.getElementById('loans')
+
   label.hidden = shares === 2
   if (shares === 2) {
-    input.value = 0
-    input.max = 0
+    treasury.value = 0
+    treasury.max = 0
   } else {
-    input.max = shares - 2
-    if (Number(input.value) > Number(input.max)) input.value = input.max
+    treasury.max = shares - 2
+    if (Number(treasury.value) > Number(treasury.max)) treasury.value = treasury.max
   }
+
+  loans.max = shares
+  if (Number(loans.value) > shares) loans.value = shares
 }
 
 document.getElementById('revenue').addEventListener('input', update)
@@ -53,6 +59,9 @@ document.getElementById('shares').addEventListener('change', () => {
   update()
 })
 document.getElementById('treasury').addEventListener('input', update)
+document.getElementById('cash').addEventListener('input', update)
+document.getElementById('loans').addEventListener('input', update)
+document.getElementById('rate').addEventListener('change', update)
 
 updateTreasuryVisibility()
 update()
