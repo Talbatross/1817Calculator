@@ -5,7 +5,8 @@ function update() {
   const { revenue: rawRevenue, shares, treasury, cash, loans, rate } = getInputs()
   const revenue = Math.floor(rawRevenue / 10) * 10
   const t = shares === 2 ? 0 : Math.max(0, Math.min(Math.floor(treasury) || 0, shares - 2))
-  const i = interest(rate, loans)
+  const l = Math.max(0, Math.min(Math.floor(loans) || 0, shares))
+  const i = interest(rate, l)
 
   if (!revenue) {
     setResults('—', '—', '—')
