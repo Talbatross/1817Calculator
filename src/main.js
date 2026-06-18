@@ -4,7 +4,7 @@ import { getInputs, setResults, setCompanyResults } from './ui.js'
 function update() {
   const { revenue: rawRevenue, shares, treasury, cash, loans, rate } = getInputs()
   const revenue = Math.floor(rawRevenue / 10) * 10
-  const t = shares === 2 ? 0 : Math.max(0, Math.min(Math.floor(treasury) || 0, shares - 2))
+  const t = shares === 2 ? 0 : Math.max(0, Math.min(Math.floor(treasury) || 0, shares * 2 - 2))
   const l = Math.max(0, Math.min(Math.floor(loans) || 0, shares))
   const i = interest(rate, l)
 
@@ -46,7 +46,7 @@ function updateTreasuryVisibility() {
     treasury.value = 0
     treasury.max = 0
   } else {
-    treasury.max = shares - 2
+    treasury.max = shares * 2 - 2
     if (Number(treasury.value) > Number(treasury.max)) treasury.value = treasury.max
   }
 
