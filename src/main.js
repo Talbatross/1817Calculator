@@ -1,8 +1,8 @@
-import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest, fullPayCompanySteps, halfPayCompanySteps, withholdCompanySteps } from './calculator.js'
-import { getInputs, setResults, setCompanyBreakdowns, clearCompanyBreakdowns } from './ui.js'
+import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest, fullPayCompanySteps, halfPayCompanySteps, withholdCompanySteps, doubleJumpAnalysis } from './calculator.js'
+import { getInputs, setResults, setCompanyBreakdowns, clearCompanyBreakdowns, setDoubleJump, clearDoubleJump } from './ui.js'
 
 function update() {
-  const { revenue: rawRevenue, shares, treasury, cash, loans, rate } = getInputs()
+  const { revenue: rawRevenue, shares, treasury, cash, loans, rate, price } = getInputs()
   const revenue = Math.floor(rawRevenue / 10) * 10
   const t = shares === 2 ? 0 : Math.max(0, Math.min(Math.floor(treasury) || 0, shares * 2 - 2))
   const l = Math.max(0, Math.min(Math.floor(loans) || 0, shares))
@@ -11,6 +11,7 @@ function update() {
   if (!revenue) {
     setResults('—', '—', '—')
     clearCompanyBreakdowns()
+    clearDoubleJump()
     return
   }
 
@@ -33,6 +34,12 @@ function update() {
     halfPayCompanySteps(revenue, shares, t, cash, i, l, rate),
     withholdCompanySteps(revenue, cash, i, l, rate)
   )
+
+  if (price > 0) {
+    setDoubleJump(doubleJumpAnalysis(revenue, shares, t, cash, l, rate, price), rate)
+  } else {
+    clearDoubleJump()
+  }
 }
 
 function updateTreasuryVisibility() {
@@ -71,6 +78,7 @@ document.getElementById('loans').addEventListener('input', () => {
   update()
 })
 document.getElementById('rate').addEventListener('change', update)
+document.getElementById('price').addEventListener('input', update)
 
 updateTreasuryVisibility()
 update()
