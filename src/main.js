@@ -1,5 +1,5 @@
-import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest } from './calculator.js'
-import { getInputs, setResults, setCompanyResults } from './ui.js'
+import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest, fullPayCompanySteps, halfPayCompanySteps, withholdCompanySteps } from './calculator.js'
+import { getInputs, setResults, setCompanyBreakdowns, clearCompanyBreakdowns } from './ui.js'
 
 function update() {
   const { revenue: rawRevenue, shares, treasury, cash, loans, rate } = getInputs()
@@ -10,7 +10,7 @@ function update() {
 
   if (!revenue) {
     setResults('—', '—', '—')
-    setCompanyResults('—', '—', '—')
+    clearCompanyBreakdowns()
     return
   }
 
@@ -28,10 +28,10 @@ function update() {
     )
   }
 
-  setCompanyResults(
-    `$${fullPayCompany(revenue, shares, t) + cash - i}`,
-    `$${halfPayCompany(revenue, shares, t) + cash - i}`,
-    `$${withholdCompany(revenue) + cash - i}`
+  setCompanyBreakdowns(
+    fullPayCompanySteps(revenue, shares, t, cash, i, l, rate),
+    halfPayCompanySteps(revenue, shares, t, cash, i, l, rate),
+    withholdCompanySteps(revenue, cash, i, l, rate)
   )
 }
 

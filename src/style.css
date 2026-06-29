@@ -86,7 +86,25 @@ select {
   gap: 2px;
 }
 
-.result__company {
-  font-size: 0.8rem;
+.result__breakdown {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 10px;
+  row-gap: 1px;
+  font-size: 0.75rem;
   color: #666;
+  margin-top: 4px;
+}
+
+.result__breakdown span:nth-child(even) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.result__breakdown .breakdown__total {
+  color: #333;
+  font-weight: 600;
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+  margin-top: 2px;
+  padding-top: 2px;
 }

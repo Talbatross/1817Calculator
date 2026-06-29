@@ -30,3 +30,42 @@ export function withholdCompany(revenue) {
 export function interest(rate, loans) {
   return rate * loans
 }
+
+export function fullPayCompanySteps(revenue, shares, treasury, cash, interestAmount, loanCount, loanRate) {
+  const perShare = fullPay(revenue, shares)
+  const steps = [{ label: 'Starting cash', amount: cash }]
+  if (treasury > 0) {
+    steps.push({ label: `Treasury (${treasury} × $${perShare})`, amount: perShare * treasury })
+  }
+  if (interestAmount > 0) {
+    steps.push({ label: `Interest (${loanCount} × $${loanRate})`, amount: -interestAmount })
+  }
+  return steps
+}
+
+export function halfPayCompanySteps(revenue, shares, treasury, cash, interestAmount, loanCount, loanRate) {
+  const perShare = halfPay(revenue, shares)
+  const withheld = revenue - perShare * shares
+  const steps = [{ label: 'Starting cash', amount: cash }]
+  if (withheld > 0) {
+    steps.push({ label: 'Withheld revenue', amount: withheld })
+  }
+  if (treasury > 0) {
+    steps.push({ label: `Treasury (${treasury} × $${perShare})`, amount: perShare * treasury })
+  }
+  if (interestAmount > 0) {
+    steps.push({ label: `Interest (${loanCount} × $${loanRate})`, amount: -interestAmount })
+  }
+  return steps
+}
+
+export function withholdCompanySteps(revenue, cash, interestAmount, loanCount, loanRate) {
+  const steps = [
+    { label: 'Starting cash', amount: cash },
+    { label: 'Revenue (withheld)', amount: revenue },
+  ]
+  if (interestAmount > 0) {
+    steps.push({ label: `Interest (${loanCount} × $${loanRate})`, amount: -interestAmount })
+  }
+  return steps
+}
