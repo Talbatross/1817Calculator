@@ -61,6 +61,13 @@
           </label>
         </div>
       </div>
+      <div class="dj-input">
+        <span class="input-group__label">Double Jump</span>
+        <label>
+          Stock price ($)
+          <input id="price" type="number" min="0" step="1" value="0" />
+        </label>
+      </div>
       <div class="results" aria-live="polite" aria-atomic="true">
         <div class="result result--full">
           <span class="result__label">Full Pay</span>
@@ -84,6 +91,7 @@
           </div>
         </div>
       </div>
+      <div id="double-jump"></div>
     </main>
     <script type="module" src="/src/main.js"></script>
   </body>
