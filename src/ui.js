@@ -51,7 +51,7 @@ export function clearDoubleJump() {
 
 export function setDoubleJump(analysis, rate) {
   const {
-    totalTarget, targetPerShare, cashBeforeLoans, loansNeeded, maxNewLoans,
+    totalTarget, targetPerShare, cash, revenue, loansNeeded, maxNewLoans,
     capacityOk, existingInterest, newInterest,
     externalShares, externalDividend, endCash, possible,
   } = analysis
@@ -78,9 +78,11 @@ export function setDoubleJump(analysis, rate) {
       ? `<span>− New interest (${loansNeeded} × $${rate})</span><span>−$${newInterest}</span>`
       : ''
 
+    const cashRow = cash > 0 ? `<span>+ Company cash</span><span>$${cash}</span>` : ''
     bodyHtml += `
       <div class="dj__breakdown">
-        <span>Cash + revenue</span><span>$${cashBeforeLoans}</span>
+        <span>Revenue</span><span>$${revenue}</span>
+        ${cashRow}
         <span>− Ext. dividend (${externalShares} × $${targetPerShare})</span><span>−$${externalDividend}</span>
         ${existIntRow}${newIntRow}
         <span class="breakdown__total">= Remaining</span><span class="breakdown__total">${fmt(endCash)}</span>

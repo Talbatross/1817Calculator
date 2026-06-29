@@ -103,13 +103,13 @@ describe('interest', () => {
 
 describe('doubleJumpAnalysis', () => {
   it('is possible when treasury dividends cover loan repayment', () => {
-    // totalTarget=2×$30=$60, cashBeforeLoans=$50 → loansNeeded=ceil((60-50)/100)=1
+    // totalTarget=2×$30=$60, revenue=$50 → loansNeeded=ceil((60-50)/100)=1
     // externalShares=2, targetPerShare=$6, externalDividend=$12
-    // newInterest=1×$10=$10, endCash=50-12-0-10=28 ✓
+    // newInterest=1×$10=$10, endCash=0+50-12-0-10=28 ✓
     const r = doubleJumpAnalysis(50, 10, 8, 0, 0, 10, 30)
     expect(r.totalTarget).toBe(60)
     expect(r.targetPerShare).toBe(6)
-    expect(r.cashBeforeLoans).toBe(50)
+    expect(r.revenue).toBe(50)
     expect(r.loansNeeded).toBe(1)
     expect(r.maxNewLoans).toBe(10)
     expect(r.capacityOk).toBe(true)
@@ -118,6 +118,16 @@ describe('doubleJumpAnalysis', () => {
     expect(r.externalShares).toBe(2)
     expect(r.externalDividend).toBe(12)
     expect(r.endCash).toBe(28)
+    expect(r.possible).toBe(true)
+  })
+
+  it('requires loans even when existing cash would cover the target', () => {
+    // cash=$200 would cover totalTarget=$100, but only revenue=$10 counts for threshold
+    // loansNeeded=ceil((100-10)/100)=1, endCash=200+10-100-0-10=100
+    const r = doubleJumpAnalysis(10, 10, 0, 200, 0, 10, 50)
+    expect(r.loansNeeded).toBe(1)
+    expect(r.cash).toBe(200)
+    expect(r.endCash).toBe(100)
     expect(r.possible).toBe(true)
   })
 

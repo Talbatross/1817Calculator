@@ -78,20 +78,22 @@ export function doubleJumpAnalysis(revenue, shares, treasury, cash, existingLoan
   const externalDividend = targetPerShare * externalShares
   const existingInterest = interest(rate, existingLoans)
   const maxNewLoans = shares - existingLoans
-  const cashBeforeLoans = cash + revenue
 
-  const loansNeeded = cashBeforeLoans >= totalTarget
+  // Only revenue (not existing cash) can fund the dividend payment
+  const loansNeeded = revenue >= totalTarget
     ? 0
-    : Math.ceil((totalTarget - cashBeforeLoans) / LOAN_VALUE)
+    : Math.ceil((totalTarget - revenue) / LOAN_VALUE)
 
   const capacityOk = loansNeeded <= maxNewLoans
   const newInterest = loansNeeded * rate
-  const endCash = cashBeforeLoans - externalDividend - existingInterest - newInterest
+  // Existing cash contributes to remaining balance but not to the dividend threshold
+  const endCash = cash + revenue - externalDividend - existingInterest - newInterest
 
   return {
     totalTarget,
     targetPerShare,
-    cashBeforeLoans,
+    cash,
+    revenue,
     loansNeeded,
     maxNewLoans,
     capacityOk,
