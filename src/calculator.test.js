@@ -103,60 +103,64 @@ describe('interest', () => {
 
 describe('doubleJumpAnalysis', () => {
   it('is possible when treasury dividends cover loan repayment', () => {
-    // shares=10, treasury=8, price=$20 → targetPerShare=$40, totalTarget=$400
-    // cashBeforeLoans=$110, loansNeeded=ceil((400-110)/100)=3
-    // externalDividend=2×$40=$80, newInterest=3×$10=$30
-    // endCash=110-80-0-30=0 ✓
-    const r = doubleJumpAnalysis(100, 10, 8, 10, 0, 10, 20)
-    expect(r.targetPerShare).toBe(40)
-    expect(r.cashBeforeLoans).toBe(110)
-    expect(r.loansNeeded).toBe(3)
+    // totalTarget=2×$30=$60, cashBeforeLoans=$50 → loansNeeded=ceil((60-50)/100)=1
+    // externalShares=2, targetPerShare=$6, externalDividend=$12
+    // newInterest=1×$10=$10, endCash=50-12-0-10=28 ✓
+    const r = doubleJumpAnalysis(50, 10, 8, 0, 0, 10, 30)
+    expect(r.totalTarget).toBe(60)
+    expect(r.targetPerShare).toBe(6)
+    expect(r.cashBeforeLoans).toBe(50)
+    expect(r.loansNeeded).toBe(1)
     expect(r.maxNewLoans).toBe(10)
     expect(r.capacityOk).toBe(true)
     expect(r.existingInterest).toBe(0)
-    expect(r.newInterest).toBe(30)
+    expect(r.newInterest).toBe(10)
     expect(r.externalShares).toBe(2)
-    expect(r.externalDividend).toBe(80)
-    expect(r.endCash).toBe(0)
+    expect(r.externalDividend).toBe(12)
+    expect(r.endCash).toBe(28)
     expect(r.possible).toBe(true)
   })
 
   it('is possible with zero new loans when cash+revenue covers total target', () => {
-    // totalTarget=20×10=$200, cashBeforeLoans=$200 → loansNeeded=0
-    // externalDividend=10×$20=$200, endCash=200-200-0-0=0 ✓
-    const r = doubleJumpAnalysis(200, 10, 0, 0, 0, 10, 10)
+    // totalTarget=2×$20=$40, cashBeforeLoans=$100 ≥ $40 → loansNeeded=0
+    // externalShares=10, targetPerShare=$4, externalDividend=$40
+    // endCash=100-40-0-0=60 ✓
+    const r = doubleJumpAnalysis(100, 10, 0, 0, 0, 10, 20)
+    expect(r.totalTarget).toBe(40)
     expect(r.loansNeeded).toBe(0)
     expect(r.newInterest).toBe(0)
-    expect(r.endCash).toBe(0)
+    expect(r.endCash).toBe(60)
     expect(r.possible).toBe(true)
   })
 
   it('is not possible when loan capacity is exceeded', () => {
-    // shares=5, existingLoans=5 → maxNewLoans=0
-    // totalTarget=40×5=$200, cashBeforeLoans=$100 → loansNeeded=1 > 0
-    const r = doubleJumpAnalysis(100, 5, 0, 0, 5, 10, 20)
-    expect(r.loansNeeded).toBe(1)
+    // shares=2, existingLoans=2 → maxNewLoans=0
+    // totalTarget=2×$100=$200, cashBeforeLoans=$10 → loansNeeded=2 > 0
+    const r = doubleJumpAnalysis(10, 2, 0, 0, 2, 10, 100)
+    expect(r.loansNeeded).toBe(2)
     expect(r.maxNewLoans).toBe(0)
     expect(r.capacityOk).toBe(false)
     expect(r.possible).toBe(false)
   })
 
-  it('is not possible when end cash is negative (no treasury to offset)', () => {
-    // treasury=0, all 10 shares are external: externalDividend=$400
-    // loansNeeded=3, newInterest=$30
-    // endCash=100-400-0-30=-330
-    const r = doubleJumpAnalysis(100, 10, 0, 0, 0, 10, 20)
-    expect(r.loansNeeded).toBe(3)
-    expect(r.endCash).toBe(-330)
+  it('is not possible when end cash is negative', () => {
+    // totalTarget=2×$20=$40, cashBeforeLoans=$10 → loansNeeded=1
+    // externalShares=10, targetPerShare=$4, externalDividend=$40
+    // newInterest=1×$10=$10, endCash=10-40-0-10=-40
+    const r = doubleJumpAnalysis(10, 10, 0, 0, 0, 10, 20)
+    expect(r.loansNeeded).toBe(1)
+    expect(r.endCash).toBe(-40)
     expect(r.possible).toBe(false)
   })
 
-  it('deducts existing loan interest from end cash', () => {
-    // same as first test but existingLoans=1 → existingInterest=$10
-    // endCash=110-80-10-30=-10
-    const r = doubleJumpAnalysis(100, 10, 8, 10, 1, 10, 20)
-    expect(r.existingInterest).toBe(10)
-    expect(r.endCash).toBe(-10)
+  it('is not possible when existing interest makes end cash negative', () => {
+    // totalTarget=2×$30=$60, cashBeforeLoans=$50 → loansNeeded=1
+    // externalDividend=2×$6=$12, existingInterest=3×$10=$30, newInterest=$10
+    // endCash=50-12-30-10=-2
+    const r = doubleJumpAnalysis(50, 10, 8, 0, 3, 10, 30)
+    expect(r.existingInterest).toBe(30)
+    expect(r.newInterest).toBe(10)
+    expect(r.endCash).toBe(-2)
     expect(r.possible).toBe(false)
   })
 })

@@ -72,8 +72,8 @@ export function withholdCompanySteps(revenue, cash, interestAmount, loanCount, l
 
 export function doubleJumpAnalysis(revenue, shares, treasury, cash, existingLoans, rate, price) {
   const LOAN_VALUE = 100
-  const targetPerShare = price * 2
-  const totalTarget = targetPerShare * shares
+  const totalTarget = price * 2
+  const targetPerShare = totalTarget / shares
   const externalShares = shares - treasury
   const externalDividend = targetPerShare * externalShares
   const existingInterest = interest(rate, existingLoans)
@@ -89,6 +89,7 @@ export function doubleJumpAnalysis(revenue, shares, treasury, cash, existingLoan
   const endCash = cashBeforeLoans - externalDividend - existingInterest - newInterest
 
   return {
+    totalTarget,
     targetPerShare,
     cashBeforeLoans,
     loansNeeded,

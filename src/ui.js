@@ -51,7 +51,7 @@ export function clearDoubleJump() {
 
 export function setDoubleJump(analysis, rate) {
   const {
-    targetPerShare, cashBeforeLoans, loansNeeded, maxNewLoans,
+    totalTarget, targetPerShare, cashBeforeLoans, loansNeeded, maxNewLoans,
     capacityOk, existingInterest, newInterest,
     externalShares, externalDividend, endCash, possible,
   } = analysis
@@ -98,7 +98,7 @@ export function setDoubleJump(analysis, rate) {
 
   document.getElementById('double-jump').innerHTML = `
     <div class="dj__header ${headerClass}">
-      <span class="dj__title">Double Jump (≥ $${targetPerShare}/share)</span>
+      <span class="dj__title">Double Jump (≥ $${totalTarget} total)</span>
       <span class="${statusClass}">${statusText}</span>
     </div>
     <div class="dj__body">${bodyHtml}</div>
