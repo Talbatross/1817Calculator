@@ -78,7 +78,7 @@ document.getElementById('loans').addEventListener('input', () => {
   update()
 })
 document.getElementById('rate').addEventListener('change', update)
-document.getElementById('price').addEventListener('input', update)
+document.getElementById('price').addEventListener('change', update)
 
 updateTreasuryVisibility()
 update()
