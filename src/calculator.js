@@ -69,3 +69,36 @@ export function withholdCompanySteps(revenue, cash, interestAmount, loanCount, l
   }
   return steps
 }
+
+export function doubleJumpAnalysis(revenue, shares, treasury, cash, existingLoans, rate, price) {
+  const LOAN_VALUE = 100
+  const targetPerShare = price * 2
+  const totalTarget = targetPerShare * shares
+  const externalShares = shares - treasury
+  const externalDividend = targetPerShare * externalShares
+  const existingInterest = interest(rate, existingLoans)
+  const maxNewLoans = shares - existingLoans
+  const cashBeforeLoans = cash + revenue
+
+  const loansNeeded = cashBeforeLoans >= totalTarget
+    ? 0
+    : Math.ceil((totalTarget - cashBeforeLoans) / LOAN_VALUE)
+
+  const capacityOk = loansNeeded <= maxNewLoans
+  const newInterest = loansNeeded * rate
+  const endCash = cashBeforeLoans - externalDividend - existingInterest - newInterest
+
+  return {
+    targetPerShare,
+    cashBeforeLoans,
+    loansNeeded,
+    maxNewLoans,
+    capacityOk,
+    existingInterest,
+    newInterest,
+    externalShares,
+    externalDividend,
+    endCash,
+    possible: capacityOk && endCash >= 0,
+  }
+}

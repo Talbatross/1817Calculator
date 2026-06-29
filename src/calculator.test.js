@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest } from './calculator.js'
+import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest, doubleJumpAnalysis } from './calculator.js'
 
 describe('fullPay', () => {
   it('divides revenue evenly by share count', () => {
@@ -98,5 +98,65 @@ describe('interest', () => {
 
   it('returns 0 when loans is 0', () => {
     expect(interest(30, 0)).toBe(0)
+  })
+})
+
+describe('doubleJumpAnalysis', () => {
+  it('is possible when treasury dividends cover loan repayment', () => {
+    // shares=10, treasury=8, price=$20 → targetPerShare=$40, totalTarget=$400
+    // cashBeforeLoans=$110, loansNeeded=ceil((400-110)/100)=3
+    // externalDividend=2×$40=$80, newInterest=3×$10=$30
+    // endCash=110-80-0-30=0 ✓
+    const r = doubleJumpAnalysis(100, 10, 8, 10, 0, 10, 20)
+    expect(r.targetPerShare).toBe(40)
+    expect(r.cashBeforeLoans).toBe(110)
+    expect(r.loansNeeded).toBe(3)
+    expect(r.maxNewLoans).toBe(10)
+    expect(r.capacityOk).toBe(true)
+    expect(r.existingInterest).toBe(0)
+    expect(r.newInterest).toBe(30)
+    expect(r.externalShares).toBe(2)
+    expect(r.externalDividend).toBe(80)
+    expect(r.endCash).toBe(0)
+    expect(r.possible).toBe(true)
+  })
+
+  it('is possible with zero new loans when cash+revenue covers total target', () => {
+    // totalTarget=20×10=$200, cashBeforeLoans=$200 → loansNeeded=0
+    // externalDividend=10×$20=$200, endCash=200-200-0-0=0 ✓
+    const r = doubleJumpAnalysis(200, 10, 0, 0, 0, 10, 10)
+    expect(r.loansNeeded).toBe(0)
+    expect(r.newInterest).toBe(0)
+    expect(r.endCash).toBe(0)
+    expect(r.possible).toBe(true)
+  })
+
+  it('is not possible when loan capacity is exceeded', () => {
+    // shares=5, existingLoans=5 → maxNewLoans=0
+    // totalTarget=40×5=$200, cashBeforeLoans=$100 → loansNeeded=1 > 0
+    const r = doubleJumpAnalysis(100, 5, 0, 0, 5, 10, 20)
+    expect(r.loansNeeded).toBe(1)
+    expect(r.maxNewLoans).toBe(0)
+    expect(r.capacityOk).toBe(false)
+    expect(r.possible).toBe(false)
+  })
+
+  it('is not possible when end cash is negative (no treasury to offset)', () => {
+    // treasury=0, all 10 shares are external: externalDividend=$400
+    // loansNeeded=3, newInterest=$30
+    // endCash=100-400-0-30=-330
+    const r = doubleJumpAnalysis(100, 10, 0, 0, 0, 10, 20)
+    expect(r.loansNeeded).toBe(3)
+    expect(r.endCash).toBe(-330)
+    expect(r.possible).toBe(false)
+  })
+
+  it('deducts existing loan interest from end cash', () => {
+    // same as first test but existingLoans=1 → existingInterest=$10
+    // endCash=110-80-10-30=-10
+    const r = doubleJumpAnalysis(100, 10, 8, 10, 1, 10, 20)
+    expect(r.existingInterest).toBe(10)
+    expect(r.endCash).toBe(-10)
+    expect(r.possible).toBe(false)
   })
 })
