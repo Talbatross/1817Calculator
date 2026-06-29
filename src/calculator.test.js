@@ -102,75 +102,76 @@ describe('interest', () => {
 })
 
 describe('doubleJumpAnalysis', () => {
-  it('is possible when treasury dividends cover loan repayment', () => {
-    // totalTarget=2×$30=$60, revenue=$50 → loansNeeded=ceil((60-50)/100)=1
-    // externalShares=2, targetPerShare=$6, externalDividend=$12
-    // newInterest=1×$10=$10, endCash=0+50-12-0-10=28 ✓
-    const r = doubleJumpAnalysis(50, 10, 8, 0, 0, 10, 30)
-    expect(r.totalTarget).toBe(60)
-    expect(r.targetPerShare).toBe(6)
-    expect(r.revenue).toBe(50)
-    expect(r.loansNeeded).toBe(1)
-    expect(r.maxNewLoans).toBe(10)
-    expect(r.capacityOk).toBe(true)
-    expect(r.existingInterest).toBe(0)
-    expect(r.newInterest).toBe(10)
-    expect(r.externalShares).toBe(2)
-    expect(r.externalDividend).toBe(12)
-    expect(r.endCash).toBe(28)
+  it('price drops when loan is taken, reducing the dividend target', () => {
+    // price=$50 (index 2), 1 loan drops price to $45 → totalTarget=90
+    // revenue=$90 covers target, no extra cash needed except $5 interest
+    // endCash = 5 + 90 - 90 - 0 - 5 = 0
+    const r = doubleJumpAnalysis(90, 10, 0, 5, 0, 5, 50)
     expect(r.possible).toBe(true)
+    expect(r.loansNeeded).toBe(1)
+    expect(r.originalPrice).toBe(50)
+    expect(r.adjustedPrice).toBe(45)
+    expect(r.totalTarget).toBe(90)
+    expect(r.endCash).toBe(0)
   })
 
-  it('requires loans even when existing cash would cover the target', () => {
-    // cash=$200 would cover totalTarget=$100, but only revenue=$10 counts for threshold
-    // loansNeeded=ceil((100-10)/100)=1, endCash=200+10-100-0-10=100
+  it('is possible with zero loans when revenue covers target at current price', () => {
+    // price=$45, totalTarget=$90, revenue=$100 ≥ $90 → loansNeeded=0, no price drop
+    // externalDividend=$90, endCash=0+100-90-0-0=10
+    const r = doubleJumpAnalysis(100, 10, 0, 0, 0, 5, 45)
+    expect(r.possible).toBe(true)
+    expect(r.loansNeeded).toBe(0)
+    expect(r.adjustedPrice).toBe(45)
+    expect(r.endCash).toBe(10)
+  })
+
+  it('treasury shares reduce external dividend', () => {
+    // price=$50, 1 loan → $45, totalTarget=$90, externalShares=2, externalDividend=$18
+    // endCash = 0 + 30 - 18 - 0 - 10 = 2
+    const r = doubleJumpAnalysis(30, 10, 8, 0, 0, 10, 50)
+    expect(r.possible).toBe(true)
+    expect(r.loansNeeded).toBe(1)
+    expect(r.adjustedPrice).toBe(45)
+    expect(r.externalDividend).toBe(18)
+    expect(r.endCash).toBe(2)
+  })
+
+  it('existing cash contributes to end balance but not to funding the dividend', () => {
+    // cash=$200 won't prevent needing a loan (only revenue=$10 counts toward $100 target)
+    // 1 loan drops price $50→$45, totalTarget=$90; endCash=200+10-90-0-10=110
     const r = doubleJumpAnalysis(10, 10, 0, 200, 0, 10, 50)
+    expect(r.possible).toBe(true)
     expect(r.loansNeeded).toBe(1)
     expect(r.cash).toBe(200)
-    expect(r.endCash).toBe(100)
-    expect(r.possible).toBe(true)
+    expect(r.endCash).toBe(110)
   })
 
-  it('is possible with zero new loans when cash+revenue covers total target', () => {
-    // totalTarget=2×$20=$40, cashBeforeLoans=$100 ≥ $40 → loansNeeded=0
-    // externalShares=10, targetPerShare=$4, externalDividend=$40
-    // endCash=100-40-0-0=60 ✓
-    const r = doubleJumpAnalysis(100, 10, 0, 0, 0, 10, 20)
-    expect(r.totalTarget).toBe(40)
-    expect(r.loansNeeded).toBe(0)
-    expect(r.newInterest).toBe(0)
-    expect(r.endCash).toBe(60)
-    expect(r.possible).toBe(true)
-  })
-
-  it('is not possible when loan capacity is exceeded', () => {
-    // shares=2, existingLoans=2 → maxNewLoans=0
-    // totalTarget=2×$100=$200, cashBeforeLoans=$10 → loansNeeded=2 > 0
-    const r = doubleJumpAnalysis(10, 2, 0, 0, 2, 10, 100)
-    expect(r.loansNeeded).toBe(2)
+  it('is not possible when loan capacity is zero and revenue is too low', () => {
+    // shares=2, existingLoans=2 → maxNewLoans=0; revenue=$10 < target=$100
+    const r = doubleJumpAnalysis(10, 2, 0, 0, 2, 10, 50)
+    expect(r.possible).toBe(false)
+    expect(r.canFund).toBe(false)
     expect(r.maxNewLoans).toBe(0)
-    expect(r.capacityOk).toBe(false)
-    expect(r.possible).toBe(false)
   })
 
-  it('is not possible when end cash is negative', () => {
-    // totalTarget=2×$20=$40, cashBeforeLoans=$10 → loansNeeded=1
-    // externalShares=10, targetPerShare=$4, externalDividend=$40
-    // newInterest=1×$10=$10, endCash=10-40-0-10=-40
-    const r = doubleJumpAnalysis(10, 10, 0, 0, 0, 10, 20)
+  it('is not possible when end cash is always negative', () => {
+    // price=$45, 1 loan drops to $40, totalTarget=$80, externalDividend=$80
+    // endCash = 0 + 10 - 80 - 0 - 10 = -80; more loans only add interest
+    const r = doubleJumpAnalysis(10, 10, 0, 0, 0, 10, 45)
+    expect(r.possible).toBe(false)
+    expect(r.canFund).toBe(true)
     expect(r.loansNeeded).toBe(1)
-    expect(r.endCash).toBe(-40)
-    expect(r.possible).toBe(false)
+    expect(r.adjustedPrice).toBe(40)
+    expect(r.endCash).toBe(-80)
   })
 
-  it('is not possible when existing interest makes end cash negative', () => {
-    // totalTarget=2×$30=$60, cashBeforeLoans=$50 → loansNeeded=1
-    // externalDividend=2×$6=$12, existingInterest=3×$10=$30, newInterest=$10
-    // endCash=50-12-30-10=-2
-    const r = doubleJumpAnalysis(50, 10, 8, 0, 3, 10, 30)
+  it('existing interest is deducted from end cash', () => {
+    // price=$50, 1 loan → $45, totalTarget=$90; existingInterest=3×$10=$30
+    // endCash = 0 + 60 - 18 - 30 - 10 = 2
+    const r = doubleJumpAnalysis(60, 10, 8, 0, 3, 10, 50)
+    expect(r.possible).toBe(true)
     expect(r.existingInterest).toBe(30)
     expect(r.newInterest).toBe(10)
-    expect(r.endCash).toBe(-2)
-    expect(r.possible).toBe(false)
+    expect(r.endCash).toBe(2)
   })
 })

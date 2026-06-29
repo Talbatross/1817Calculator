@@ -51,9 +51,10 @@ export function clearDoubleJump() {
 
 export function setDoubleJump(analysis, rate) {
   const {
-    totalTarget, targetPerShare, cash, revenue, loansNeeded, maxNewLoans,
-    capacityOk, existingInterest, newInterest,
-    externalShares, externalDividend, endCash, possible,
+    possible, canFund,
+    originalPrice, adjustedPrice, totalTarget, targetPerShare,
+    cash, revenue, loansNeeded, maxNewLoans,
+    existingInterest, newInterest, externalShares, externalDividend, endCash,
   } = analysis
 
   const headerClass = possible ? 'dj__header--ok' : 'dj__header--fail'
@@ -68,7 +69,8 @@ export function setDoubleJump(analysis, rate) {
     if (loansNeeded === 0) {
       bodyHtml += '<div class="dj__loans">No new loans needed</div>'
     } else {
-      bodyHtml += `<div class="dj__loans">${loansNeeded} new loan${loansNeeded !== 1 ? 's' : ''} needed ($${loansNeeded * 100} + $${newInterest} interest)</div>`
+      const priceNote = adjustedPrice < originalPrice ? `, price $${originalPrice} → $${adjustedPrice}` : ''
+      bodyHtml += `<div class="dj__loans">${loansNeeded} new loan${loansNeeded !== 1 ? 's' : ''} needed ($${loansNeeded * 100} + $${newInterest} interest${priceNote})</div>`
     }
 
     const existIntRow = existingInterest > 0
@@ -88,13 +90,13 @@ export function setDoubleJump(analysis, rate) {
         <span class="breakdown__total">= Remaining</span><span class="breakdown__total">${fmt(endCash)}</span>
       </div>`
   } else {
-    if (!capacityOk) {
-      bodyHtml += `<div class="dj__reason">Need ${loansNeeded} loans — capacity: ${maxNewLoans}</div>`
+    if (!canFund) {
+      bodyHtml += `<div class="dj__reason">Revenue ($${revenue}) below target ($${totalTarget}) — loan capacity: ${maxNewLoans}</div>`
     } else {
-      const prefix = loansNeeded > 0
-        ? `${loansNeeded} loan${loansNeeded !== 1 ? 's' : ''} needed, but remaining cash: `
-        : 'Remaining cash would be: '
-      bodyHtml += `<div class="dj__reason">${prefix}${fmt(endCash)}</div>`
+      const loanNote = loansNeeded > 0
+        ? `${loansNeeded} loan${loansNeeded !== 1 ? 's' : ''} (price $${originalPrice} → $${adjustedPrice}), but `
+        : ''
+      bodyHtml += `<div class="dj__reason">${loanNote}remaining cash: ${fmt(endCash)}</div>`
     }
   }
 
