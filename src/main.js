@@ -1,5 +1,5 @@
-import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest, fullPayCompanySteps, halfPayCompanySteps, withholdCompanySteps, doubleJumpAnalysis } from './calculator.js'
-import { getInputs, setResults, setCompanyBreakdowns, clearCompanyBreakdowns, setDoubleJump, clearDoubleJump } from './ui.js'
+import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest, fullPayCompanySteps, halfPayCompanySteps, withholdCompanySteps, doubleJumpAnalysis, halfPayDoubleJumpAnalysis } from './calculator.js'
+import { getInputs, setResults, setCompanyBreakdowns, clearCompanyBreakdowns, setDoubleJumps, clearDoubleJump } from './ui.js'
 
 function update() {
   const { revenue: rawRevenue, shares, treasury, cash, loans, rate, price } = getInputs()
@@ -36,7 +36,11 @@ function update() {
   )
 
   if (price > 0) {
-    setDoubleJump(doubleJumpAnalysis(revenue, shares, t, cash, l, rate, price), rate)
+    setDoubleJumps(
+      doubleJumpAnalysis(revenue, shares, t, cash, l, rate, price),
+      halfPayDoubleJumpAnalysis(revenue, shares, t, cash, l, rate, price),
+      rate
+    )
   } else {
     clearDoubleJump()
   }
