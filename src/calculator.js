@@ -72,38 +72,40 @@ export function withholdCompanySteps(revenue, cash, interestAmount, loanCount, l
 
 export const STOCK_PRICES = [40, 45, 50, 55, 60, 65, 70, 80, 90, 100, 110, 120, 135, 150, 165, 180, 200, 220, 245, 270, 300, 330, 360, 400, 440, 490, 540, 600]
 
-export function doubleJumpAnalysis(revenue, shares, treasury, cash, existingLoans, rate, price) {
-  const LOAN_VALUE = 100
+// effectiveRevenue: actual paid portion for display (halfPay*shares for Half Pay, full revenue for Full Pay)
+// thresholdRevenue: revenue counted toward the DJ threshold (revenue/2 for Half Pay, full revenue for Full Pay)
+// Dividends are paid from revenue (not company cash). endCash = cash + loanProceeds + withheld + treasuryDividend - interest
+function analyzeDoubleJump(effectiveRevenue, thresholdRevenue, revenue, shares, treasury, cash, existingLoans, rate, price) {
   const priceIndex = STOCK_PRICES.indexOf(price)
   const externalShares = shares - treasury
   const existingInterest = interest(rate, existingLoans)
   const maxNewLoans = shares - existingLoans
+  const withheld = revenue - effectiveRevenue
+  const treasuryDividend = effectiveRevenue * treasury / shares
 
-  // Each loan taken drops the stock price one step, lowering the double-jump threshold.
-  // Iterate loan counts to find the minimum N where the dividend can be funded and endCash >= 0.
   let bestFundable = null
 
   for (let N = 0; N <= maxNewLoans; N++) {
     const adjustedPrice = STOCK_PRICES[Math.max(0, priceIndex - N)]
     const totalTarget = adjustedPrice * 2
-    if (revenue + N * LOAN_VALUE < totalTarget) continue  // can't fund dividend with this many loans
+    if (thresholdRevenue < totalTarget) continue
 
     const targetPerShare = totalTarget / shares
     const externalDividend = targetPerShare * externalShares
     const newInterest = N * rate
-    const endCash = cash + revenue - externalDividend - existingInterest - newInterest
+    const endCash = cash + withheld + treasuryDividend - existingInterest - newInterest
 
     const result = {
       originalPrice: price, adjustedPrice, totalTarget, targetPerShare,
-      cash, revenue, loansNeeded: N, maxNewLoans,
+      cash, effectiveRevenue, withheld, loansNeeded: N, maxNewLoans,
       externalShares, externalDividend, existingInterest, newInterest, endCash,
+      treasuryDividend,
     }
 
     if (endCash >= 0) return { possible: true, canFund: true, ...result }
     if (bestFundable === null || endCash > bestFundable.endCash) bestFundable = result
   }
 
-  // Not possible — report best fundable scenario, or max-loans scenario if nothing was fundable
   const canFund = bestFundable !== null
 
   if (!canFund) {
@@ -113,13 +115,24 @@ export function doubleJumpAnalysis(revenue, shares, treasury, cash, existingLoan
     const targetPerShare = totalTarget / shares
     const externalDividend = targetPerShare * externalShares
     const newInterest = N * rate
-    const endCash = cash + revenue - externalDividend - existingInterest - newInterest
+    const endCash = cash + withheld + treasuryDividend - existingInterest - newInterest
     bestFundable = {
       originalPrice: price, adjustedPrice, totalTarget, targetPerShare,
-      cash, revenue, loansNeeded: N, maxNewLoans,
+      cash, effectiveRevenue, withheld, loansNeeded: N, maxNewLoans,
       externalShares, externalDividend, existingInterest, newInterest, endCash,
+      treasuryDividend,
     }
   }
 
   return { possible: false, canFund, ...bestFundable }
+}
+
+export function doubleJumpAnalysis(revenue, shares, treasury, cash, existingLoans, rate, price) {
+  return analyzeDoubleJump(revenue, revenue, revenue, shares, treasury, cash, existingLoans, rate, price)
+}
+
+export function halfPayDoubleJumpAnalysis(revenue, shares, treasury, cash, existingLoans, rate, price) {
+  const effectiveRevenue = halfPay(revenue, shares) * shares
+  const thresholdRevenue = effectiveRevenue
+  return analyzeDoubleJump(effectiveRevenue, thresholdRevenue, revenue, shares, treasury, cash, existingLoans, rate, price)
 }

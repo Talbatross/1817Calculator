@@ -49,21 +49,22 @@ export function clearDoubleJump() {
   document.getElementById('double-jump').innerHTML = ''
 }
 
-export function setDoubleJump(analysis, rate) {
+function renderDJCard(analysis, rate, payLabel) {
   const {
     possible, canFund,
     originalPrice, adjustedPrice, totalTarget, targetPerShare,
-    cash, revenue, loansNeeded, maxNewLoans,
+    cash, effectiveRevenue, withheld, loansNeeded, maxNewLoans,
     existingInterest, newInterest, externalShares, externalDividend, endCash,
+    treasuryDividend,
   } = analysis
 
   const headerClass = possible ? 'dj__header--ok' : 'dj__header--fail'
   const statusClass = possible ? 'dj__status--ok' : 'dj__status--fail'
   const statusText = possible ? 'Possible' : 'Not Possible'
-
   const fmt = n => n < 0 ? `−$${Math.abs(n)}` : `$${n}`
+  const revenueLabel = payLabel === 'Half Pay' ? 'Half-pay' : 'Revenue'
 
-  let bodyHtml = '<div class="dj__applies">Applies to Full Pay and Half Pay</div>'
+  let bodyHtml = ''
 
   if (possible) {
     if (loansNeeded === 0) {
@@ -73,6 +74,11 @@ export function setDoubleJump(analysis, rate) {
       bodyHtml += `<div class="dj__loans">${loansNeeded} new loan${loansNeeded !== 1 ? 's' : ''} needed ($${loansNeeded * 100} + $${newInterest} interest${priceNote})</div>`
     }
 
+    const cashRow = cash > 0 ? `<span>+ Company cash</span><span>$${cash}</span>` : ''
+    const withheldRow = withheld > 0 ? `<span>+ Withheld</span><span>$${withheld}</span>` : ''
+    const treasuryDivRow = treasuryDividend > 0
+      ? `<span>+ Treasury dividends</span><span>$${treasuryDividend}</span>`
+      : ''
     const existIntRow = existingInterest > 0
       ? `<span>− Existing interest</span><span>−$${existingInterest}</span>`
       : ''
@@ -80,18 +86,17 @@ export function setDoubleJump(analysis, rate) {
       ? `<span>− New interest (${loansNeeded} × $${rate})</span><span>−$${newInterest}</span>`
       : ''
 
-    const cashRow = cash > 0 ? `<span>+ Company cash</span><span>$${cash}</span>` : ''
     bodyHtml += `
       <div class="dj__breakdown">
-        <span>Revenue</span><span>$${revenue}</span>
         ${cashRow}
-        <span>− Ext. dividend (${externalShares} × $${targetPerShare})</span><span>−$${externalDividend}</span>
+        ${withheldRow}
+        ${treasuryDivRow}
         ${existIntRow}${newIntRow}
         <span class="breakdown__total">= Remaining</span><span class="breakdown__total">${fmt(endCash)}</span>
       </div>`
   } else {
     if (!canFund) {
-      bodyHtml += `<div class="dj__reason">Revenue ($${revenue}) below target ($${totalTarget}) — loan capacity: ${maxNewLoans}</div>`
+      bodyHtml += `<div class="dj__reason">${revenueLabel} ($${effectiveRevenue}) below target ($${totalTarget}) — loan capacity: ${maxNewLoans}</div>`
     } else {
       const loanNote = loansNeeded > 0
         ? `${loansNeeded} loan${loansNeeded !== 1 ? 's' : ''} (price $${originalPrice} → $${adjustedPrice}), but `
@@ -100,11 +105,18 @@ export function setDoubleJump(analysis, rate) {
     }
   }
 
-  document.getElementById('double-jump').innerHTML = `
-    <div class="dj__header ${headerClass}">
-      <span class="dj__title">Double Jump (≥ $${totalTarget} total)</span>
-      <span class="${statusClass}">${statusText}</span>
-    </div>
-    <div class="dj__body">${bodyHtml}</div>
-  `
+  return `
+    <div class="dj__card">
+      <div class="dj__header ${headerClass}">
+        <span class="dj__title">${payLabel} Double Jump (≥ $${totalTarget} total)</span>
+        <span class="${statusClass}">${statusText}</span>
+      </div>
+      <div class="dj__body">${bodyHtml}</div>
+    </div>`
+}
+
+export function setDoubleJumps(fullAnalysis, halfAnalysis, rate) {
+  document.getElementById('double-jump').innerHTML =
+    renderDJCard(fullAnalysis, rate, 'Full Pay') +
+    renderDJCard(halfAnalysis, rate, 'Half Pay')
 }
