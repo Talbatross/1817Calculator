@@ -16,14 +16,14 @@
             Revenue ($)
             <input id="revenue" type="number" min="0" step="10" value="0" />
           </label>
-          <label>
+          <div class="btn-group-label">
             Shares
-            <select id="shares">
-              <option value="10" selected>10</option>
-              <option value="5">5</option>
-              <option value="2">2</option>
-            </select>
-          </label>
+            <div class="btn-group" id="shares" role="group" aria-label="Shares">
+              <button class="btn-group__btn" data-value="2">2</button>
+              <button class="btn-group__btn" data-value="5">5</button>
+              <button class="btn-group__btn btn-group__btn--active" data-value="10">10</button>
+            </div>
+          </div>
           <label id="treasury-label">
             Treasury shares
             <input id="treasury" type="number" min="0" max="18" step="1" value="0" />

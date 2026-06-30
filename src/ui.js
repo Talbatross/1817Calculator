@@ -1,7 +1,7 @@
 export function getInputs() {
   return {
     revenue: Number(document.getElementById('revenue').value),
-    shares: Number(document.getElementById('shares').value),
+    shares: Number(document.querySelector('#shares .btn-group__btn--active').dataset.value),
     treasury: Number(document.getElementById('treasury').value),
     cash: Number(document.getElementById('cash').value),
     loans: Number(document.getElementById('loans').value),

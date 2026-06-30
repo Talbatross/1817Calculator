@@ -46,8 +46,13 @@ function update() {
   }
 }
 
+function getShares() {
+  const active = document.querySelector('#shares .btn-group__btn--active')
+  return Number(active.dataset.value)
+}
+
 function updateTreasuryVisibility() {
-  const shares = Number(document.getElementById('shares').value)
+  const shares = getShares()
   const label = document.getElementById('treasury-label')
   const treasury = document.getElementById('treasury')
   const loans = document.getElementById('loans')
@@ -66,9 +71,13 @@ function updateTreasuryVisibility() {
 }
 
 document.getElementById('revenue').addEventListener('input', update)
-document.getElementById('shares').addEventListener('change', () => {
-  updateTreasuryVisibility()
-  update()
+document.querySelectorAll('#shares .btn-group__btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#shares .btn-group__btn').forEach(b => b.classList.remove('btn-group__btn--active'))
+    btn.classList.add('btn-group__btn--active')
+    updateTreasuryVisibility()
+    update()
+  })
 })
 document.getElementById('treasury').addEventListener('input', () => {
   const treasury = document.getElementById('treasury')
