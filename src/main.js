@@ -20,13 +20,13 @@ function update() {
     setResults(
       `$${fullPay(revenue, shares) * shares} total`,
       `$${halfPay(revenue, shares) * shares} total`,
-      `$${withhold()} total`
+      '—'
     )
   } else {
     setResults(
       `$${fullPay(revenue, shares)}/share`,
       `$${halfPay(revenue, shares)}/share`,
-      `$${withhold()}/share`
+      '—'
     )
   }
 
