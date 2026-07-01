@@ -11,7 +11,6 @@
       <h1>1817 Payout Calculator</h1>
       <div class="inputs">
         <div class="input-group">
-          <span class="input-group__label">Revenue</span>
           <label>
             Revenue ($)
             <input id="revenue" type="number" min="0" step="10" value="0" />
@@ -30,7 +29,6 @@
           </label>
         </div>
         <div class="input-group">
-          <span class="input-group__label">Loans</span>
           <label>
             Company cash ($)
             <input id="cash" type="number" min="0" value="0" />
@@ -62,24 +60,32 @@
       </div>
       <div class="results" aria-live="polite" aria-atomic="true">
         <div class="result result--full">
-          <span class="result__label">Full Pay</span>
-          <div class="result__right">
-            <span class="result__value" id="result-full">—</span>
-            <div class="result__breakdown" id="result-full-breakdown"></div>
+          <div class="result__header">
+            <span class="result__label">Full Pay</span>
+            <div class="result__right">
+              <span class="result__value" id="result-full">—</span>
+              <div class="result__breakdown" id="result-full-breakdown"></div>
+            </div>
           </div>
+          <div class="result__share-table" id="result-full-table"></div>
         </div>
         <div class="result result--half">
-          <span class="result__label">Half Pay</span>
-          <div class="result__right">
-            <span class="result__value" id="result-half">—</span>
-            <div class="result__breakdown" id="result-half-breakdown"></div>
+          <div class="result__header">
+            <span class="result__label">Half Pay</span>
+            <div class="result__right">
+              <span class="result__value" id="result-half">—</span>
+              <div class="result__breakdown" id="result-half-breakdown"></div>
+            </div>
           </div>
+          <div class="result__share-table" id="result-half-table"></div>
         </div>
         <div class="result result--withhold">
-          <span class="result__label">Withhold</span>
-          <div class="result__right">
-            <span class="result__value" id="result-withhold">—</span>
-            <div class="result__breakdown" id="result-withhold-breakdown"></div>
+          <div class="result__header">
+            <span class="result__label">Withhold</span>
+            <div class="result__right">
+              <span class="result__value" id="result-withhold">—</span>
+              <div class="result__breakdown" id="result-withhold-breakdown"></div>
+            </div>
           </div>
         </div>
       </div>

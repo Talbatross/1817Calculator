@@ -99,9 +99,14 @@ select {
 
 .result {
   display: flex;
+  flex-direction: column;
+  padding: 12px 16px;
+}
+
+.result__header {
+  display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
 }
 
 .result + .result {
@@ -143,6 +148,49 @@ select {
   border-top: 1px solid rgba(0, 0, 0, 0.15);
   margin-top: 2px;
   padding-top: 2px;
+}
+
+.result__share-table {
+  margin-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  padding-top: 8px;
+  overflow-x: auto;
+}
+
+.result__share-table:empty {
+  display: none;
+}
+
+.share-table {
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  width: 100%;
+}
+
+.share-table ~ .share-table {
+  margin-top: 4px;
+}
+
+.share-table th,
+.share-table td {
+  text-align: center;
+  padding: 2px 4px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.share-table th {
+  color: #999;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: normal;
+  text-align: left;
+  padding-right: 8px;
+}
+
+.share-table td {
+  color: #666;
 }
 
 .dj-input {

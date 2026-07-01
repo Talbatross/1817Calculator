@@ -45,6 +45,44 @@ function renderBreakdown(id, steps) {
   document.getElementById(id).innerHTML = html
 }
 
+const SHARE_TABLE_MAX = { 5: 8, 10: 18 }
+
+function renderChunked(max, perShare, numChunks) {
+  const chunkSize = Math.ceil(max / numChunks)
+  let html = ''
+  for (let start = 1; start <= max; start += chunkSize) {
+    const end = Math.min(start + chunkSize - 1, max)
+    let sharesRow = '', payoutRow = ''
+    for (let i = start; i <= end; i++) {
+      sharesRow += `<td>${i}</td>`
+      payoutRow += `<td>$${perShare * i}</td>`
+    }
+    html += `<table class="share-table"><tr><th>Shares</th>${sharesRow}</tr><tr><th>Payout</th>${payoutRow}</tr></table>`
+  }
+  return html
+}
+
+function fitShareTable(el, max, perShare) {
+  for (let numChunks = 1; numChunks <= max; numChunks++) {
+    el.innerHTML = renderChunked(max, perShare, numChunks)
+    if (el.scrollWidth <= el.clientWidth) break
+  }
+}
+
+export function setShareTables(shares, fullPerShare, halfPerShare) {
+  const max = SHARE_TABLE_MAX[shares]
+  const fullEl = document.getElementById('result-full-table')
+  const halfEl = document.getElementById('result-half-table')
+  if (!max) { fullEl.innerHTML = ''; halfEl.innerHTML = ''; return }
+  fitShareTable(fullEl, max, fullPerShare)
+  fitShareTable(halfEl, max, halfPerShare)
+}
+
+export function clearShareTables() {
+  document.getElementById('result-full-table').innerHTML = ''
+  document.getElementById('result-half-table').innerHTML = ''
+}
+
 export function clearDoubleJump() {
   document.getElementById('double-jump').innerHTML = ''
 }
