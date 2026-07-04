@@ -261,3 +261,27 @@ select {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+.result__share-table--collapsed {
+  display: none;
+}
+
+.result__toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  color: #555;
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+.result__toggle svg {
+  transition: transform 0.15s ease;
+}
+
+.result__toggle--expanded svg {
+  transform: rotate(90deg);
+}
