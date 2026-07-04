@@ -61,12 +61,14 @@
       <div class="results" aria-live="polite" aria-atomic="true">
         <div class="result result--full">
           <div class="result__header">
-            <button class="result__toggle" id="toggle-full" aria-expanded="false" aria-controls="result-full-table" aria-label="Toggle full pay table">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-            <span class="result__label">Full Pay</span>
+            <div class="result__header__left">
+              <button class="result__toggle" id="toggle-full" hidden aria-expanded="false" aria-controls="result-full-table" aria-label="Toggle full pay table">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <span class="result__label">Full Pay</span>
+            </div>
             <div class="result__right">
               <span class="result__value" id="result-full">—</span>
               <div class="result__breakdown" id="result-full-breakdown"></div>
@@ -76,12 +78,14 @@
         </div>
         <div class="result result--half">
           <div class="result__header">
-            <button class="result__toggle" id="toggle-half" aria-expanded="false" aria-controls="result-half-table" aria-label="Toggle half pay table">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-            <span class="result__label">Half Pay</span>
+            <div class="result__header__left">
+              <button class="result__toggle" id="toggle-half" hidden aria-expanded="false" aria-controls="result-half-table" aria-label="Toggle half pay table">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <span class="result__label">Half Pay</span>
+            </div>
             <div class="result__right">
               <span class="result__value" id="result-half">—</span>
               <div class="result__breakdown" id="result-half-breakdown"></div>

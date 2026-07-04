@@ -121,6 +121,10 @@ export function setShareTables(shares, fullPerShare, halfPerShare) {
 export function clearShareTables() {
   tableState.full = false
   tableState.half = false
+  document.getElementById('result-full-table').classList.remove('result__share-table--collapsed')
+  document.getElementById('result-half-table').classList.remove('result__share-table--collapsed')
+  document.getElementById('toggle-full').classList.remove('result__toggle--expanded')
+  document.getElementById('toggle-half').classList.remove('result__toggle--expanded')
   document.getElementById('result-full-table').innerHTML = ''
   document.getElementById('result-half-table').innerHTML = ''
   document.getElementById('toggle-full').hidden = true

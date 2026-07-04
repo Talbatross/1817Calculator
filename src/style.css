@@ -266,6 +266,12 @@ select {
   display: none;
 }
 
+.result__header__left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .result__toggle {
   background: none;
   border: none;
