@@ -47,6 +47,22 @@ function renderBreakdown(id, steps) {
 
 const SHARE_TABLE_MAX = { 5: 8, 10: 18 }
 
+const tableState = { full: false, half: false }
+
+function toggleTable(which) {
+  tableState[which] = !tableState[which]
+  const tableEl = document.getElementById(`result-${which}-table`)
+  const btnEl = document.getElementById(`toggle-${which}`)
+  tableEl.classList.toggle('result__share-table--collapsed', !tableState[which])
+  btnEl.classList.toggle('result__toggle--expanded', tableState[which])
+  btnEl.setAttribute('aria-expanded', String(tableState[which]))
+}
+
+export function initToggleButtons() {
+  document.getElementById('toggle-full').addEventListener('click', () => toggleTable('full'))
+  document.getElementById('toggle-half').addEventListener('click', () => toggleTable('half'))
+}
+
 function renderChunked(max, perShare, numChunks) {
   const chunkSize = Math.ceil(max / numChunks)
   let html = ''
@@ -73,14 +89,38 @@ export function setShareTables(shares, fullPerShare, halfPerShare) {
   const max = SHARE_TABLE_MAX[shares]
   const fullEl = document.getElementById('result-full-table')
   const halfEl = document.getElementById('result-half-table')
-  if (!max) { fullEl.innerHTML = ''; halfEl.innerHTML = ''; return }
+  const fullBtn = document.getElementById('toggle-full')
+  const halfBtn = document.getElementById('toggle-half')
+  if (!max) {
+    fullEl.innerHTML = ''
+    halfEl.innerHTML = ''
+    fullBtn.hidden = true
+    halfBtn.hidden = true
+    return
+  }
+  fullBtn.hidden = false
+  halfBtn.hidden = false
+  // Temporarily reveal both elements so fitShareTable can measure clientWidth correctly.
+  // (display:none produces clientWidth=0, which breaks the chunk-fitting loop.)
+  // No visual flash because JS runs synchronously before the browser paints.
+  fullEl.classList.remove('result__share-table--collapsed')
+  halfEl.classList.remove('result__share-table--collapsed')
   fitShareTable(fullEl, max, fullPerShare)
   fitShareTable(halfEl, max, halfPerShare)
+  // Re-apply collapsed state from tableState
+  fullEl.classList.toggle('result__share-table--collapsed', !tableState.full)
+  halfEl.classList.toggle('result__share-table--collapsed', !tableState.half)
+  fullBtn.classList.toggle('result__toggle--expanded', tableState.full)
+  halfBtn.classList.toggle('result__toggle--expanded', tableState.half)
+  fullBtn.setAttribute('aria-expanded', String(tableState.full))
+  halfBtn.setAttribute('aria-expanded', String(tableState.half))
 }
 
 export function clearShareTables() {
   document.getElementById('result-full-table').innerHTML = ''
   document.getElementById('result-half-table').innerHTML = ''
+  document.getElementById('toggle-full').hidden = true
+  document.getElementById('toggle-half').hidden = true
 }
 
 export function clearDoubleJump() {

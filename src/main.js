@@ -1,5 +1,5 @@
 import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest, fullPayCompanySteps, halfPayCompanySteps, withholdCompanySteps, doubleJumpAnalysis, halfPayDoubleJumpAnalysis } from './calculator.js'
-import { getInputs, setResults, setCompanyBreakdowns, clearCompanyBreakdowns, setDoubleJumps, clearDoubleJump, setShareTables, clearShareTables } from './ui.js'
+import { getInputs, setResults, setCompanyBreakdowns, clearCompanyBreakdowns, setDoubleJumps, clearDoubleJump, setShareTables, clearShareTables, initToggleButtons } from './ui.js'
 
 function update() {
   const { revenue: rawRevenue, shares, treasury, cash, loans, rate, price } = getInputs()
@@ -98,3 +98,4 @@ document.getElementById('price').addEventListener('change', update)
 
 updateTreasuryVisibility()
 update()
+initToggleButtons()
