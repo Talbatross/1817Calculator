@@ -92,6 +92,8 @@ export function setShareTables(shares, fullPerShare, halfPerShare) {
   const fullBtn = document.getElementById('toggle-full')
   const halfBtn = document.getElementById('toggle-half')
   if (!max) {
+    tableState.full = false
+    tableState.half = false
     fullEl.innerHTML = ''
     halfEl.innerHTML = ''
     fullBtn.hidden = true
@@ -117,6 +119,8 @@ export function setShareTables(shares, fullPerShare, halfPerShare) {
 }
 
 export function clearShareTables() {
+  tableState.full = false
+  tableState.half = false
   document.getElementById('result-full-table').innerHTML = ''
   document.getElementById('result-half-table').innerHTML = ''
   document.getElementById('toggle-full').hidden = true
