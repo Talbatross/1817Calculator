@@ -135,61 +135,64 @@ export function clearDoubleJump() {
   document.getElementById('double-jump').innerHTML = ''
 }
 
-function renderDJCard(analysis, rate, payLabel) {
-  const {
-    possible, canFund,
-    originalPrice, adjustedPrice, totalTarget, targetPerShare,
-    cash, effectiveRevenue, withheld, loansNeeded, maxNewLoans,
-    existingInterest, newInterest, externalShares, externalDividend, endCash,
-    treasuryDividend,
-  } = analysis
+const fmtSigned = n => n < 0 ? `−$${Math.abs(n)}` : `$${n}`
 
-  const headerClass = possible ? 'dj__header--ok' : 'dj__header--fail'
-  const statusClass = possible ? 'dj__status--ok' : 'dj__status--fail'
-  const statusText = possible ? 'Possible' : 'Not Possible'
-  const fmt = n => n < 0 ? `−$${Math.abs(n)}` : `$${n}`
-  const revenueLabel = payLabel === 'Half Pay' ? 'Half-pay' : 'Revenue'
+function renderDJPossibleBody(analysis, rate) {
+  const { originalPrice, adjustedPrice, cash, withheld, loansNeeded, existingInterest, newInterest, treasuryDividend, endCash } = analysis
 
-  let bodyHtml = ''
+  let loansHtml
+  if (loansNeeded === 0) {
+    loansHtml = '<div class="dj__loans">No new loans needed</div>'
+  } else {
+    const priceNote = adjustedPrice < originalPrice ? `, price $${originalPrice} → $${adjustedPrice}` : ''
+    loansHtml = `<div class="dj__loans">${loansNeeded} new loan${loansNeeded !== 1 ? 's' : ''} needed ($${loansNeeded * 100} + $${newInterest} interest${priceNote})</div>`
+  }
 
-  if (possible) {
-    if (loansNeeded === 0) {
-      bodyHtml += '<div class="dj__loans">No new loans needed</div>'
-    } else {
-      const priceNote = adjustedPrice < originalPrice ? `, price $${originalPrice} → $${adjustedPrice}` : ''
-      bodyHtml += `<div class="dj__loans">${loansNeeded} new loan${loansNeeded !== 1 ? 's' : ''} needed ($${loansNeeded * 100} + $${newInterest} interest${priceNote})</div>`
-    }
+  const cashRow = cash > 0 ? `<span>+ Company cash</span><span>$${cash}</span>` : ''
+  const withheldRow = withheld > 0 ? `<span>+ Withheld</span><span>$${withheld}</span>` : ''
+  const treasuryDivRow = treasuryDividend > 0
+    ? `<span>+ Treasury dividends</span><span>$${treasuryDividend}</span>`
+    : ''
+  const existIntRow = existingInterest > 0
+    ? `<span>− Existing interest</span><span>−$${existingInterest}</span>`
+    : ''
+  const newIntRow = newInterest > 0
+    ? `<span>− New interest (${loansNeeded} × $${rate})</span><span>−$${newInterest}</span>`
+    : ''
 
-    const cashRow = cash > 0 ? `<span>+ Company cash</span><span>$${cash}</span>` : ''
-    const withheldRow = withheld > 0 ? `<span>+ Withheld</span><span>$${withheld}</span>` : ''
-    const treasuryDivRow = treasuryDividend > 0
-      ? `<span>+ Treasury dividends</span><span>$${treasuryDividend}</span>`
-      : ''
-    const existIntRow = existingInterest > 0
-      ? `<span>− Existing interest</span><span>−$${existingInterest}</span>`
-      : ''
-    const newIntRow = newInterest > 0
-      ? `<span>− New interest (${loansNeeded} × $${rate})</span><span>−$${newInterest}</span>`
-      : ''
-
-    bodyHtml += `
+  return loansHtml + `
       <div class="dj__breakdown">
         ${cashRow}
         ${withheldRow}
         ${treasuryDivRow}
         ${existIntRow}${newIntRow}
-        <span class="breakdown__total">= Remaining</span><span class="breakdown__total">${fmt(endCash)}</span>
+        <span class="breakdown__total">= Remaining</span><span class="breakdown__total">${fmtSigned(endCash)}</span>
       </div>`
-  } else {
-    if (!canFund) {
-      bodyHtml += `<div class="dj__reason">${revenueLabel} ($${effectiveRevenue}) below target ($${totalTarget}) — loan capacity: ${maxNewLoans}</div>`
-    } else {
-      const loanNote = loansNeeded > 0
-        ? `${loansNeeded} loan${loansNeeded !== 1 ? 's' : ''} (price $${originalPrice} → $${adjustedPrice}), but `
-        : ''
-      bodyHtml += `<div class="dj__reason">${loanNote}remaining cash: ${fmt(endCash)}</div>`
-    }
+}
+
+function renderDJImpossibleBody(analysis, revenueLabel) {
+  const { canFund, effectiveRevenue, totalTarget, maxNewLoans, loansNeeded, originalPrice, adjustedPrice, endCash } = analysis
+
+  if (!canFund) {
+    return `<div class="dj__reason">${revenueLabel} ($${effectiveRevenue}) below target ($${totalTarget}) — loan capacity: ${maxNewLoans}</div>`
   }
+  const loanNote = loansNeeded > 0
+    ? `${loansNeeded} loan${loansNeeded !== 1 ? 's' : ''} (price $${originalPrice} → $${adjustedPrice}), but `
+    : ''
+  return `<div class="dj__reason">${loanNote}remaining cash: ${fmtSigned(endCash)}</div>`
+}
+
+function renderDJCard(analysis, rate, payLabel) {
+  const { possible, totalTarget } = analysis
+
+  const headerClass = possible ? 'dj__header--ok' : 'dj__header--fail'
+  const statusClass = possible ? 'dj__status--ok' : 'dj__status--fail'
+  const statusText = possible ? 'Possible' : 'Not Possible'
+  const revenueLabel = payLabel === 'Half Pay' ? 'Half-pay' : 'Revenue'
+
+  const bodyHtml = possible
+    ? renderDJPossibleBody(analysis, rate)
+    : renderDJImpossibleBody(analysis, revenueLabel)
 
   return `
     <div class="dj__card">

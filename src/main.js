@@ -1,11 +1,19 @@
 import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest, fullPayCompanySteps, halfPayCompanySteps, withholdCompanySteps, fullPayDoubleJumpAnalysis, halfPayDoubleJumpAnalysis } from './calculator.js'
 import { getInputs, setResults, setCompanyBreakdowns, clearCompanyBreakdowns, setDoubleJumps, clearDoubleJump, setShareTables, clearShareTables, initToggleButtons } from './ui.js'
 
+function formatShareResults(revenue, shares) {
+  if (shares === 2) {
+    return [`$${fullPay(revenue, shares) * shares} total`, `$${halfPay(revenue, shares) * shares} total`]
+  }
+  return [`$${fullPay(revenue, shares)}/share`, `$${halfPay(revenue, shares)}/share`]
+}
+
 function update() {
   const { revenue: rawRevenue, shares, treasury, cash, loans, rate, price } = getInputs()
   const revenue = Math.floor(rawRevenue / 10) * 10
   const t = shares === 2 ? 0 : Math.max(0, Math.min(Math.floor(treasury) || 0, shares * 2 - 2))
   const existingLoans = Math.max(0, Math.min(Math.floor(loans) || 0, shares))
+  const company = { shares, treasury: t, cash, existingLoans, rate }
   const i = interest(rate, existingLoans)
 
   if (!revenue) {
@@ -16,32 +24,21 @@ function update() {
     return
   }
 
-  if (shares === 2) {
-    setResults(
-      `$${fullPay(revenue, shares) * shares} total`,
-      `$${halfPay(revenue, shares) * shares} total`,
-      ''
-    )
-  } else {
-    setResults(
-      `$${fullPay(revenue, shares)}/share`,
-      `$${halfPay(revenue, shares)}/share`,
-      ''
-    )
-  }
+  const [fullResult, halfResult] = formatShareResults(revenue, shares)
+  setResults(fullResult, halfResult, '')
 
   setShareTables(shares, fullPay(revenue, shares), halfPay(revenue, shares))
 
   setCompanyBreakdowns(
-    fullPayCompanySteps(revenue, shares, t, cash, i, existingLoans, rate),
-    halfPayCompanySteps(revenue, shares, t, cash, i, existingLoans, rate),
-    withholdCompanySteps(revenue, cash, i, existingLoans, rate)
+    fullPayCompanySteps(revenue, i, company),
+    halfPayCompanySteps(revenue, i, company),
+    withholdCompanySteps(revenue, i, company)
   )
 
   if (price > 0) {
     setDoubleJumps(
-      fullPayDoubleJumpAnalysis(revenue, shares, t, cash, existingLoans, rate, price),
-      halfPayDoubleJumpAnalysis(revenue, shares, t, cash, existingLoans, rate, price),
+      fullPayDoubleJumpAnalysis(revenue, company, price),
+      halfPayDoubleJumpAnalysis(revenue, company, price),
       rate
     )
   } else {
