@@ -1,4 +1,4 @@
-import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest, fullPayCompanySteps, halfPayCompanySteps, withholdCompanySteps, doubleJumpAnalysis, halfPayDoubleJumpAnalysis } from './calculator.js'
+import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest, fullPayCompanySteps, halfPayCompanySteps, withholdCompanySteps, fullPayDoubleJumpAnalysis, halfPayDoubleJumpAnalysis } from './calculator.js'
 import { getInputs, setResults, setCompanyBreakdowns, clearCompanyBreakdowns, setDoubleJumps, clearDoubleJump, setShareTables, clearShareTables, initToggleButtons } from './ui.js'
 
 function update() {
@@ -40,7 +40,7 @@ function update() {
 
   if (price > 0) {
     setDoubleJumps(
-      doubleJumpAnalysis(revenue, shares, t, cash, l, rate, price),
+      fullPayDoubleJumpAnalysis(revenue, shares, t, cash, l, rate, price),
       halfPayDoubleJumpAnalysis(revenue, shares, t, cash, l, rate, price),
       rate
     )

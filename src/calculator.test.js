@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest, doubleJumpAnalysis, halfPayDoubleJumpAnalysis } from './calculator.js'
+import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest, fullPayDoubleJumpAnalysis, halfPayDoubleJumpAnalysis } from './calculator.js'
 
 describe('fullPay', () => {
   it('divides revenue evenly by share count', () => {
@@ -101,11 +101,11 @@ describe('interest', () => {
   })
 })
 
-describe('doubleJumpAnalysis', () => {
+describe('fullPayDoubleJumpAnalysis', () => {
   it('price drops when loan is taken, reducing the dividend target', () => {
     // price=$50 (index 2), 1 loan drops price to $45 → totalTarget=90
     // revenue=$90 covers target; loan repaid after; endCash = 5 (cash) - 5 (interest) = 0
-    const r = doubleJumpAnalysis(90, 10, 0, 5, 0, 5, 50)
+    const r = fullPayDoubleJumpAnalysis(90, 10, 0, 5, 0, 5, 50)
     expect(r.possible).toBe(true)
     expect(r.loansNeeded).toBe(1)
     expect(r.originalPrice).toBe(50)
@@ -117,7 +117,7 @@ describe('doubleJumpAnalysis', () => {
   it('is possible with zero loans when revenue covers target at current price', () => {
     // price=$45, totalTarget=$90, revenue=$100 ≥ $90 → loansNeeded=0, no price drop
     // endCash = 0 (cash) + 0 (no loans) + 0 (no withheld/treasury) - 0 (interest) = 0
-    const r = doubleJumpAnalysis(100, 10, 0, 0, 0, 5, 45)
+    const r = fullPayDoubleJumpAnalysis(100, 10, 0, 0, 0, 5, 45)
     expect(r.possible).toBe(true)
     expect(r.loansNeeded).toBe(0)
     expect(r.adjustedPrice).toBe(45)
@@ -128,7 +128,7 @@ describe('doubleJumpAnalysis', () => {
     // price=$50, 1 loan → $45, totalTarget=$90, externalShares=2, externalDividend=$18
     // treasuryDividend = 90 * 8/10 = 72; loan repaid after
     // endCash = 0 (cash) + 72 (treasury div) - 10 (interest) = 62
-    const r = doubleJumpAnalysis(90, 10, 8, 0, 0, 10, 50)
+    const r = fullPayDoubleJumpAnalysis(90, 10, 8, 0, 0, 10, 50)
     expect(r.possible).toBe(true)
     expect(r.loansNeeded).toBe(1)
     expect(r.adjustedPrice).toBe(45)
@@ -140,7 +140,7 @@ describe('doubleJumpAnalysis', () => {
     // cash=$200 won't prevent needing a loan (only revenue=$90 counts toward $100 target)
     // 1 loan drops price $50→$45, totalTarget=$90
     // loan repaid after; endCash = 200 (cash) - 10 (interest) = 190
-    const r = doubleJumpAnalysis(90, 10, 0, 200, 0, 10, 50)
+    const r = fullPayDoubleJumpAnalysis(90, 10, 0, 200, 0, 10, 50)
     expect(r.possible).toBe(true)
     expect(r.loansNeeded).toBe(1)
     expect(r.cash).toBe(200)
@@ -149,7 +149,7 @@ describe('doubleJumpAnalysis', () => {
 
   it('is not possible when loan capacity is zero and revenue is too low', () => {
     // shares=2, existingLoans=2 → maxNewLoans=0; revenue=$10 < target=$100
-    const r = doubleJumpAnalysis(10, 2, 0, 0, 2, 10, 50)
+    const r = fullPayDoubleJumpAnalysis(10, 2, 0, 0, 2, 10, 50)
     expect(r.possible).toBe(false)
     expect(r.canFund).toBe(false)
     expect(r.maxNewLoans).toBe(0)
@@ -158,7 +158,7 @@ describe('doubleJumpAnalysis', () => {
   it('is not possible when end cash is always negative', () => {
     // price=$40 (floor), revenue=$80 meets totalTarget=$80 at N=0, maxNewLoans=0 (fully loaned)
     // existingInterest = 10×$10 = $100; endCash = 0 (cash) + 0 (no new loans) - 100 = -100
-    const r = doubleJumpAnalysis(80, 10, 0, 0, 10, 10, 40)
+    const r = fullPayDoubleJumpAnalysis(80, 10, 0, 0, 10, 10, 40)
     expect(r.possible).toBe(false)
     expect(r.canFund).toBe(true)
     expect(r.loansNeeded).toBe(0)
@@ -170,7 +170,7 @@ describe('doubleJumpAnalysis', () => {
     // price=$50, 1 loan → $45, totalTarget=$90; existingInterest=3×$10=$30
     // treasuryDividend = 90 * 8/10 = 72; loan repaid after
     // endCash = 0 (cash) + 72 (treasury div) - 30 (existing int) - 10 (new int) = 32
-    const r = doubleJumpAnalysis(90, 10, 8, 0, 3, 10, 50)
+    const r = fullPayDoubleJumpAnalysis(90, 10, 8, 0, 3, 10, 50)
     expect(r.possible).toBe(true)
     expect(r.existingInterest).toBe(30)
     expect(r.newInterest).toBe(10)
