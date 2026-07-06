@@ -5,8 +5,8 @@ function update() {
   const { revenue: rawRevenue, shares, treasury, cash, loans, rate, price } = getInputs()
   const revenue = Math.floor(rawRevenue / 10) * 10
   const t = shares === 2 ? 0 : Math.max(0, Math.min(Math.floor(treasury) || 0, shares * 2 - 2))
-  const l = Math.max(0, Math.min(Math.floor(loans) || 0, shares))
-  const i = interest(rate, l)
+  const existingLoans = Math.max(0, Math.min(Math.floor(loans) || 0, shares))
+  const i = interest(rate, existingLoans)
 
   if (!revenue) {
     setResults('—', '—', '—')
@@ -33,15 +33,15 @@ function update() {
   setShareTables(shares, fullPay(revenue, shares), halfPay(revenue, shares))
 
   setCompanyBreakdowns(
-    fullPayCompanySteps(revenue, shares, t, cash, i, l, rate),
-    halfPayCompanySteps(revenue, shares, t, cash, i, l, rate),
-    withholdCompanySteps(revenue, cash, i, l, rate)
+    fullPayCompanySteps(revenue, shares, t, cash, i, existingLoans, rate),
+    halfPayCompanySteps(revenue, shares, t, cash, i, existingLoans, rate),
+    withholdCompanySteps(revenue, cash, i, existingLoans, rate)
   )
 
   if (price > 0) {
     setDoubleJumps(
-      fullPayDoubleJumpAnalysis(revenue, shares, t, cash, l, rate, price),
-      halfPayDoubleJumpAnalysis(revenue, shares, t, cash, l, rate, price),
+      fullPayDoubleJumpAnalysis(revenue, shares, t, cash, existingLoans, rate, price),
+      halfPayDoubleJumpAnalysis(revenue, shares, t, cash, existingLoans, rate, price),
       rate
     )
   } else {
