@@ -72,10 +72,9 @@ export function withholdCompanySteps(revenue, interestAmount, { cash, existingLo
 
 export const STOCK_PRICES = [40, 45, 50, 55, 60, 65, 70, 80, 90, 100, 110, 120, 135, 150, 165, 180, 200, 220, 245, 270, 300, 330, 360, 400, 440, 490, 540, 600]
 
-// effectiveRevenue: actual paid portion for display (halfPay*shares for Half Pay, full revenue for Full Pay)
-// thresholdRevenue: revenue counted toward the jump threshold (revenue/2 for Half Pay, full revenue for Full Pay)
+// effectiveRevenue: paid portion counted toward jump target (halfPay*shares for Half Pay, full revenue for Full Pay)
 // Dividends are paid from revenue (not company cash). endCash = cash + loanProceeds + withheld + treasuryDividend - interest
-function analyzeJump(effectiveRevenue, thresholdRevenue, rawRevenue, { shares, treasury, cash, existingLoans, rate }, price, multiplier) {
+function analyzeJump(effectiveRevenue, rawRevenue, { shares, treasury, cash, existingLoans, rate }, price, multiplier) {
   const priceIndex = STOCK_PRICES.indexOf(price)
   const externalShares = shares - treasury
   const existingInterest = interest(rate, existingLoans)
@@ -102,7 +101,7 @@ function analyzeJump(effectiveRevenue, thresholdRevenue, rawRevenue, { shares, t
 
   for (let newLoanCount = 0; newLoanCount <= maxNewLoans; newLoanCount++) {
     const scenario = buildScenario(newLoanCount)
-    if (thresholdRevenue < scenario.totalTarget) continue
+    if (effectiveRevenue < scenario.totalTarget) continue
 
     if (scenario.endCash >= 0) return { possible: true, canFund: true, ...scenario }
     if (bestFundable === null || scenario.endCash > bestFundable.endCash) bestFundable = scenario
@@ -118,10 +117,10 @@ function analyzeJump(effectiveRevenue, thresholdRevenue, rawRevenue, { shares, t
 }
 
 export function fullPayJumpAnalysis(revenue, company, price, multiplier) {
-  return analyzeJump(revenue, revenue, revenue, company, price, multiplier)
+  return analyzeJump(revenue, revenue, company, price, multiplier)
 }
 
 export function halfPayJumpAnalysis(revenue, company, price, multiplier) {
   const effectiveRevenue = halfPay(revenue, company.shares) * company.shares
-  return analyzeJump(effectiveRevenue, effectiveRevenue, revenue, company, price, multiplier)
+  return analyzeJump(effectiveRevenue, revenue, company, price, multiplier)
 }

@@ -196,9 +196,8 @@ describe('halfPayJumpAnalysis (double)', () => {
 
   it('cannot fund when halfPay total + max loans < target', () => {
     // revenue=100, shares=2, existingLoans=2 → maxNewLoans=0
-    // halfPay(100,2): halfPayTotal=50, effectiveRevenue=50
-    // N=0 only: 50 < totalTarget=200 → canFund=false (full pay would succeed: 100 ≥ 200? No)
-    // Actually totalTarget = price*2 = 100*2 = 200; 50 < 200 → canFund=false
+    // halfPay(100,2): effectiveRevenue=50, withheld=50
+    // price=100, multiplier=2 → totalTarget=200; effectiveRevenue=50 < 200 → canFund=false
     const r = halfPayJumpAnalysis(100, { shares: 2, treasury: 0, cash: 0, existingLoans: 2, rate: 5 }, 100, 2)
     expect(r.possible).toBe(false)
     expect(r.canFund).toBe(false)
@@ -283,5 +282,16 @@ describe('halfPayJumpAnalysis (single)', () => {
     expect(r.loansNeeded).toBe(0)
     expect(r.effectiveRevenue).toBe(50)
     expect(r.endCash).toBe(50)
+  })
+
+  it('takes loans when the paid half is below 1× price', () => {
+    // revenue=$80, shares=10: withheld=$40, paid=$40
+    // price=$50 → $45 → $40 after 2 loans; target $40 ✓
+    // endCash = 0 (cash) + 40 (withheld) - 10 (2 × $5 interest) = 30
+    const r = halfPayJumpAnalysis(80, { shares: 10, treasury: 0, cash: 0, existingLoans: 0, rate: 5 }, 50, 1)
+    expect(r.possible).toBe(true)
+    expect(r.loansNeeded).toBe(2)
+    expect(r.adjustedPrice).toBe(40)
+    expect(r.endCash).toBe(30)
   })
 })

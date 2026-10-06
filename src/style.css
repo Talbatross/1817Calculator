@@ -235,19 +235,17 @@ select {
 }
 
 .dj__header--ok   { background: #e8f5e9; }
-.dj__header--fail { background: #fbe9e7; }
 
 .dj__title { font-weight: 600; color: #333; }
 
 .dj__status--ok   { color: #2e7d32; font-weight: bold; }
-.dj__status--fail { color: #c62828; font-weight: bold; }
 
 .dj__body {
   padding: 8px 16px 12px;
   font-size: 0.85rem;
 }
 
-.dj__loans, .dj__reason {
+.dj__loans {
   color: #555;
   margin-bottom: 6px;
 }
