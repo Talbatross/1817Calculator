@@ -181,7 +181,7 @@ describe('fullPayJumpAnalysis (double)', () => {
 describe('halfPayJumpAnalysis (double)', () => {
   it('needs more loans than full pay when halfPay total is below target', () => {
     // revenue=160, shares=10, price=$50 → totalTarget=$100 at N=0
-    // halfPay(160,10): effectiveRevenue=80, withheld=80, thresholdRevenue=80
+    // halfPay(160,10): effectiveRevenue=80, withheld=80
     // N=0: 80 < 100 → skip. N=1: totalTarget=$90, 80 < 90 → skip.
     // N=2: adjustedPrice=$40, totalTarget=$80; 80 ≥ 80 ✓
     // loans repaid after; endCash = 0 (cash) + 80 (withheld) - 10 (interest) = 70
@@ -207,7 +207,7 @@ describe('halfPayJumpAnalysis (double)', () => {
   })
 
   it('withheld contributes to endCash even though it does not fund the dividend', () => {
-    // revenue=180, shares=10, price=$55 → halfPay: effectiveRevenue=90, withheld=90, thresholdRevenue=90
+    // revenue=180, shares=10, price=$55 → halfPay: effectiveRevenue=90, withheld=90
     // N=2: adjustedPrice=$45, totalTarget=$90; 90 ≥ 90 ✓
     // loans repaid after; endCash = 0 (cash) + 90 (withheld) - 10 (interest) = 80
     // without withheld: 0 - 10 = -90 (withheld adds $90, making it possible)
@@ -222,7 +222,7 @@ describe('halfPayJumpAnalysis (double)', () => {
 
   it('threshold uses the rounded payout, so odd revenue that rounds up can qualify without extra loans', () => {
     // revenue=190, shares=10, price=$50 → halfPay rounds UP: payout=$100, withheld=$90
-    // thresholdRevenue=$100 = totalTarget=$100 at N=0 → qualifies with no loans
+    // effectiveRevenue=$100 = totalTarget=$100 at N=0 → qualifies with no loans
     // endCash = 0 (cash) + 90 (withheld) - 0 (interest) = 90
     const r = halfPayJumpAnalysis(190, { shares: 10, treasury: 0, cash: 0, existingLoans: 0, rate: 5 }, 50, 2)
     expect(r.possible).toBe(true)
@@ -234,7 +234,7 @@ describe('halfPayJumpAnalysis (double)', () => {
   })
 
   it('exactly $200 revenue qualifies for double jump at $50 with no loans', () => {
-    // revenue=200, price=$50, totalTarget=100; thresholdRevenue=100 ≥ 100 ✓
+    // revenue=200, price=$50, totalTarget=100; effectiveRevenue=100 ≥ 100 ✓
     // endCash = 0 + 200 - 100 - 0 - 0 = 100
     const r = halfPayJumpAnalysis(200, { shares: 10, treasury: 0, cash: 0, existingLoans: 0, rate: 5 }, 50, 2)
     expect(r.possible).toBe(true)
