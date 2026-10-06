@@ -27,7 +27,6 @@ Four combinations are evaluated, in this order:
 
 - Each **possible** combination gets one card (green header, as now):
   - Title: `<Jump> — <Pay Type> (≥ $X total)`, where X is the unadjusted target `price × multiplier`
-  - Status: `Possible ✓`
   - Body: the existing loans line plus the remaining-cash breakdown (unchanged)
 - **Impossible** combinations are not rendered.
 - If a pay type's Double Jump is possible with **no new loans**, that pay type's Single Jump is not rendered: paying that amount forces the double jump, so a single jump is not a choice. If the Double Jump needs loans, the Single Jump is still shown, since the player can choose not to take them.
