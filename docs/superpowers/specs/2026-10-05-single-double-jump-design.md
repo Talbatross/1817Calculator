@@ -30,6 +30,7 @@ Four combinations are evaluated, in this order:
   - Status: `Possible ✓`
   - Body: the existing loans line plus the remaining-cash breakdown (unchanged)
 - **Impossible** combinations are not rendered.
+- If a pay type's Double Jump is possible with **no new loans**, that pay type's Single Jump is not rendered: paying that amount forces the double jump, so a single jump is not a choice. If the Double Jump needs loans, the Single Jump is still shown, since the player can choose not to take them.
 - If **none** are possible, show a single line: `No jumps possible`.
 - The section stays hidden when price is unset or revenue is 0 (unchanged).
 

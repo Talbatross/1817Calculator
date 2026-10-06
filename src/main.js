@@ -15,10 +15,15 @@ const JUMP_COMBINATIONS = [
   { jumpLabel: 'Single Jump', payLabel: 'Half Pay', multiplier: 1, analyze: halfPayJumpAnalysis },
 ]
 
+// A pay type that double jumps without loans can't choose to single jump instead
 function possibleJumps(revenue, company, price) {
-  return JUMP_COMBINATIONS
+  const jumps = JUMP_COMBINATIONS
     .map(({ analyze, ...combo }) => ({ ...combo, analysis: analyze(revenue, company, price, combo.multiplier) }))
     .filter(jump => jump.analysis)
+  const forcedDoublePays = jumps
+    .filter(jump => jump.multiplier === 2 && jump.analysis.loansNeeded === 0)
+    .map(jump => jump.payLabel)
+  return jumps.filter(jump => jump.multiplier === 2 || !forcedDoublePays.includes(jump.payLabel))
 }
 
 function update() {
