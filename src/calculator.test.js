@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest, fullPayDoubleJumpAnalysis, halfPayDoubleJumpAnalysis } from './calculator.js'
+import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest, fullPayJumpAnalysis, halfPayJumpAnalysis } from './calculator.js'
 
 describe('fullPay', () => {
   it('divides revenue evenly by share count', () => {
@@ -101,11 +101,11 @@ describe('interest', () => {
   })
 })
 
-describe('fullPayDoubleJumpAnalysis', () => {
+describe('fullPayJumpAnalysis (double)', () => {
   it('price drops when loan is taken, reducing the dividend target', () => {
     // price=$50 (index 2), 1 loan drops price to $45 → totalTarget=90
     // revenue=$90 covers target; loan repaid after; endCash = 5 (cash) - 5 (interest) = 0
-    const r = fullPayDoubleJumpAnalysis(90, { shares: 10, treasury: 0, cash: 5, existingLoans: 0, rate: 5 }, 50)
+    const r = fullPayJumpAnalysis(90, { shares: 10, treasury: 0, cash: 5, existingLoans: 0, rate: 5 }, 50, 2)
     expect(r.possible).toBe(true)
     expect(r.loansNeeded).toBe(1)
     expect(r.originalPrice).toBe(50)
@@ -117,7 +117,7 @@ describe('fullPayDoubleJumpAnalysis', () => {
   it('is possible with zero loans when revenue covers target at current price', () => {
     // price=$45, totalTarget=$90, revenue=$100 ≥ $90 → loansNeeded=0, no price drop
     // endCash = 0 (cash) + 0 (no loans) + 0 (no withheld/treasury) - 0 (interest) = 0
-    const r = fullPayDoubleJumpAnalysis(100, { shares: 10, treasury: 0, cash: 0, existingLoans: 0, rate: 5 }, 45)
+    const r = fullPayJumpAnalysis(100, { shares: 10, treasury: 0, cash: 0, existingLoans: 0, rate: 5 }, 45, 2)
     expect(r.possible).toBe(true)
     expect(r.loansNeeded).toBe(0)
     expect(r.adjustedPrice).toBe(45)
@@ -128,7 +128,7 @@ describe('fullPayDoubleJumpAnalysis', () => {
     // price=$50, 1 loan → $45, totalTarget=$90, externalShares=2, externalDividend=$18
     // treasuryDividend = 90 * 8/10 = 72; loan repaid after
     // endCash = 0 (cash) + 72 (treasury div) - 10 (interest) = 62
-    const r = fullPayDoubleJumpAnalysis(90, { shares: 10, treasury: 8, cash: 0, existingLoans: 0, rate: 10 }, 50)
+    const r = fullPayJumpAnalysis(90, { shares: 10, treasury: 8, cash: 0, existingLoans: 0, rate: 10 }, 50, 2)
     expect(r.possible).toBe(true)
     expect(r.loansNeeded).toBe(1)
     expect(r.adjustedPrice).toBe(45)
@@ -140,7 +140,7 @@ describe('fullPayDoubleJumpAnalysis', () => {
     // cash=$200 won't prevent needing a loan (only revenue=$90 counts toward $100 target)
     // 1 loan drops price $50→$45, totalTarget=$90
     // loan repaid after; endCash = 200 (cash) - 10 (interest) = 190
-    const r = fullPayDoubleJumpAnalysis(90, { shares: 10, treasury: 0, cash: 200, existingLoans: 0, rate: 10 }, 50)
+    const r = fullPayJumpAnalysis(90, { shares: 10, treasury: 0, cash: 200, existingLoans: 0, rate: 10 }, 50, 2)
     expect(r.possible).toBe(true)
     expect(r.loansNeeded).toBe(1)
     expect(r.cash).toBe(200)
@@ -149,7 +149,7 @@ describe('fullPayDoubleJumpAnalysis', () => {
 
   it('is not possible when loan capacity is zero and revenue is too low', () => {
     // shares=2, existingLoans=2 → maxNewLoans=0; revenue=$10 < target=$100
-    const r = fullPayDoubleJumpAnalysis(10, { shares: 2, treasury: 0, cash: 0, existingLoans: 2, rate: 10 }, 50)
+    const r = fullPayJumpAnalysis(10, { shares: 2, treasury: 0, cash: 0, existingLoans: 2, rate: 10 }, 50, 2)
     expect(r.possible).toBe(false)
     expect(r.canFund).toBe(false)
     expect(r.maxNewLoans).toBe(0)
@@ -158,7 +158,7 @@ describe('fullPayDoubleJumpAnalysis', () => {
   it('is not possible when end cash is always negative', () => {
     // price=$40 (floor), revenue=$80 meets totalTarget=$80 at N=0, maxNewLoans=0 (fully loaned)
     // existingInterest = 10×$10 = $100; endCash = 0 (cash) + 0 (no new loans) - 100 = -100
-    const r = fullPayDoubleJumpAnalysis(80, { shares: 10, treasury: 0, cash: 0, existingLoans: 10, rate: 10 }, 40)
+    const r = fullPayJumpAnalysis(80, { shares: 10, treasury: 0, cash: 0, existingLoans: 10, rate: 10 }, 40, 2)
     expect(r.possible).toBe(false)
     expect(r.canFund).toBe(true)
     expect(r.loansNeeded).toBe(0)
@@ -170,7 +170,7 @@ describe('fullPayDoubleJumpAnalysis', () => {
     // price=$50, 1 loan → $45, totalTarget=$90; existingInterest=3×$10=$30
     // treasuryDividend = 90 * 8/10 = 72; loan repaid after
     // endCash = 0 (cash) + 72 (treasury div) - 30 (existing int) - 10 (new int) = 32
-    const r = fullPayDoubleJumpAnalysis(90, { shares: 10, treasury: 8, cash: 0, existingLoans: 3, rate: 10 }, 50)
+    const r = fullPayJumpAnalysis(90, { shares: 10, treasury: 8, cash: 0, existingLoans: 3, rate: 10 }, 50, 2)
     expect(r.possible).toBe(true)
     expect(r.existingInterest).toBe(30)
     expect(r.newInterest).toBe(10)
@@ -178,14 +178,14 @@ describe('fullPayDoubleJumpAnalysis', () => {
   })
 })
 
-describe('halfPayDoubleJumpAnalysis', () => {
+describe('halfPayJumpAnalysis (double)', () => {
   it('needs more loans than full pay when halfPay total is below target', () => {
     // revenue=160, shares=10, price=$50 → totalTarget=$100 at N=0
     // halfPay(160,10): effectiveRevenue=80, withheld=80, thresholdRevenue=80
     // N=0: 80 < 100 → skip. N=1: totalTarget=$90, 80 < 90 → skip.
     // N=2: adjustedPrice=$40, totalTarget=$80; 80 ≥ 80 ✓
     // loans repaid after; endCash = 0 (cash) + 80 (withheld) - 10 (interest) = 70
-    const r = halfPayDoubleJumpAnalysis(160, { shares: 10, treasury: 0, cash: 0, existingLoans: 0, rate: 5 }, 50)
+    const r = halfPayJumpAnalysis(160, { shares: 10, treasury: 0, cash: 0, existingLoans: 0, rate: 5 }, 50, 2)
     expect(r.possible).toBe(true)
     expect(r.loansNeeded).toBe(2)
     expect(r.adjustedPrice).toBe(40)
@@ -199,7 +199,7 @@ describe('halfPayDoubleJumpAnalysis', () => {
     // halfPay(100,2): halfPayTotal=50, effectiveRevenue=50
     // N=0 only: 50 < totalTarget=200 → canFund=false (full pay would succeed: 100 ≥ 200? No)
     // Actually totalTarget = price*2 = 100*2 = 200; 50 < 200 → canFund=false
-    const r = halfPayDoubleJumpAnalysis(100, { shares: 2, treasury: 0, cash: 0, existingLoans: 2, rate: 5 }, 100)
+    const r = halfPayJumpAnalysis(100, { shares: 2, treasury: 0, cash: 0, existingLoans: 2, rate: 5 }, 100, 2)
     expect(r.possible).toBe(false)
     expect(r.canFund).toBe(false)
     expect(r.effectiveRevenue).toBe(50)
@@ -212,7 +212,7 @@ describe('halfPayDoubleJumpAnalysis', () => {
     // N=2: adjustedPrice=$45, totalTarget=$90; 90 ≥ 90 ✓
     // loans repaid after; endCash = 0 (cash) + 90 (withheld) - 10 (interest) = 80
     // without withheld: 0 - 10 = -90 (withheld adds $90, making it possible)
-    const r = halfPayDoubleJumpAnalysis(180, { shares: 10, treasury: 0, cash: 0, existingLoans: 0, rate: 5 }, 55)
+    const r = halfPayJumpAnalysis(180, { shares: 10, treasury: 0, cash: 0, existingLoans: 0, rate: 5 }, 55, 2)
     expect(r.possible).toBe(true)
     expect(r.loansNeeded).toBe(2)
     expect(r.adjustedPrice).toBe(45)
@@ -225,7 +225,7 @@ describe('halfPayDoubleJumpAnalysis', () => {
     // revenue=190, shares=10, price=$50 → halfPay rounds UP: payout=$100, withheld=$90
     // thresholdRevenue=$100 = totalTarget=$100 at N=0 → qualifies with no loans
     // endCash = 0 (cash) + 90 (withheld) - 0 (interest) = 90
-    const r = halfPayDoubleJumpAnalysis(190, { shares: 10, treasury: 0, cash: 0, existingLoans: 0, rate: 5 }, 50)
+    const r = halfPayJumpAnalysis(190, { shares: 10, treasury: 0, cash: 0, existingLoans: 0, rate: 5 }, 50, 2)
     expect(r.possible).toBe(true)
     expect(r.loansNeeded).toBe(0)
     expect(r.adjustedPrice).toBe(50)
@@ -237,10 +237,51 @@ describe('halfPayDoubleJumpAnalysis', () => {
   it('exactly $200 revenue qualifies for double jump at $50 with no loans', () => {
     // revenue=200, price=$50, totalTarget=100; thresholdRevenue=100 ≥ 100 ✓
     // endCash = 0 + 200 - 100 - 0 - 0 = 100
-    const r = halfPayDoubleJumpAnalysis(200, { shares: 10, treasury: 0, cash: 0, existingLoans: 0, rate: 5 }, 50)
+    const r = halfPayJumpAnalysis(200, { shares: 10, treasury: 0, cash: 0, existingLoans: 0, rate: 5 }, 50, 2)
     expect(r.possible).toBe(true)
     expect(r.loansNeeded).toBe(0)
     expect(r.adjustedPrice).toBe(50)
     expect(r.endCash).toBe(100)
+  })
+})
+
+describe('fullPayJumpAnalysis (single)', () => {
+  it('is possible with zero loans when revenue meets 1× price', () => {
+    // price=$50, totalTarget=$50, revenue=$50 → no loans; endCash = 0
+    const r = fullPayJumpAnalysis(50, { shares: 10, treasury: 0, cash: 0, existingLoans: 0, rate: 5 }, 50, 1)
+    expect(r.possible).toBe(true)
+    expect(r.loansNeeded).toBe(0)
+    expect(r.totalTarget).toBe(50)
+    expect(r.endCash).toBe(0)
+  })
+
+  it('uses a loan to drop the price one step', () => {
+    // price=$50, revenue=$45 < $50; 1 loan → $45, target=$45 ✓
+    // endCash = 5 (cash) - 5 (interest) = 0
+    const r = fullPayJumpAnalysis(45, { shares: 10, treasury: 0, cash: 5, existingLoans: 0, rate: 5 }, 50, 1)
+    expect(r.possible).toBe(true)
+    expect(r.loansNeeded).toBe(1)
+    expect(r.adjustedPrice).toBe(45)
+    expect(r.totalTarget).toBe(45)
+    expect(r.endCash).toBe(0)
+  })
+
+  it('is not possible when revenue is below 1× price and no loan capacity', () => {
+    // existingLoans=10 → maxNewLoans=0; revenue=$30 < $50
+    const r = fullPayJumpAnalysis(30, { shares: 10, treasury: 0, cash: 0, existingLoans: 10, rate: 5 }, 50, 1)
+    expect(r.possible).toBe(false)
+    expect(r.canFund).toBe(false)
+  })
+})
+
+describe('halfPayJumpAnalysis (single)', () => {
+  it('counts only the paid half toward the target', () => {
+    // revenue=$100, shares=10: withheld=$50, paid=$50 ≥ target $50 → no loans
+    // endCash = 0 (cash) + 50 (withheld) = 50
+    const r = halfPayJumpAnalysis(100, { shares: 10, treasury: 0, cash: 0, existingLoans: 0, rate: 5 }, 50, 1)
+    expect(r.possible).toBe(true)
+    expect(r.loansNeeded).toBe(0)
+    expect(r.effectiveRevenue).toBe(50)
+    expect(r.endCash).toBe(50)
   })
 })

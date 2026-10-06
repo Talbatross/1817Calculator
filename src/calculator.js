@@ -73,9 +73,9 @@ export function withholdCompanySteps(revenue, interestAmount, { cash, existingLo
 export const STOCK_PRICES = [40, 45, 50, 55, 60, 65, 70, 80, 90, 100, 110, 120, 135, 150, 165, 180, 200, 220, 245, 270, 300, 330, 360, 400, 440, 490, 540, 600]
 
 // effectiveRevenue: actual paid portion for display (halfPay*shares for Half Pay, full revenue for Full Pay)
-// thresholdRevenue: revenue counted toward the DJ threshold (revenue/2 for Half Pay, full revenue for Full Pay)
+// thresholdRevenue: revenue counted toward the jump threshold (revenue/2 for Half Pay, full revenue for Full Pay)
 // Dividends are paid from revenue (not company cash). endCash = cash + loanProceeds + withheld + treasuryDividend - interest
-function analyzeDoubleJump(effectiveRevenue, thresholdRevenue, rawRevenue, { shares, treasury, cash, existingLoans, rate }, price) {
+function analyzeJump(effectiveRevenue, thresholdRevenue, rawRevenue, { shares, treasury, cash, existingLoans, rate }, price, multiplier) {
   const priceIndex = STOCK_PRICES.indexOf(price)
   const externalShares = shares - treasury
   const existingInterest = interest(rate, existingLoans)
@@ -85,7 +85,7 @@ function analyzeDoubleJump(effectiveRevenue, thresholdRevenue, rawRevenue, { sha
 
   const buildScenario = (newLoanCount) => {
     const adjustedPrice = STOCK_PRICES[Math.max(0, priceIndex - newLoanCount)]
-    const totalTarget = adjustedPrice * 2
+    const totalTarget = adjustedPrice * multiplier
     const targetPerShare = totalTarget / shares
     const externalDividend = targetPerShare * externalShares
     const newInterest = newLoanCount * rate
@@ -117,12 +117,11 @@ function analyzeDoubleJump(effectiveRevenue, thresholdRevenue, rawRevenue, { sha
   return { possible: false, canFund, ...bestFundable }
 }
 
-export function fullPayDoubleJumpAnalysis(revenue, company, price) {
-  return analyzeDoubleJump(revenue, revenue, revenue, company, price)
+export function fullPayJumpAnalysis(revenue, company, price, multiplier) {
+  return analyzeJump(revenue, revenue, revenue, company, price, multiplier)
 }
 
-export function halfPayDoubleJumpAnalysis(revenue, company, price) {
+export function halfPayJumpAnalysis(revenue, company, price, multiplier) {
   const effectiveRevenue = halfPay(revenue, company.shares) * company.shares
-  const thresholdRevenue = effectiveRevenue
-  return analyzeDoubleJump(effectiveRevenue, thresholdRevenue, revenue, company, price)
+  return analyzeJump(effectiveRevenue, effectiveRevenue, revenue, company, price, multiplier)
 }
