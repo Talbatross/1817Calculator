@@ -18,7 +18,7 @@ const JUMP_COMBINATIONS = [
 function possibleJumps(revenue, company, price) {
   return JUMP_COMBINATIONS
     .map(({ analyze, ...combo }) => ({ ...combo, analysis: analyze(revenue, company, price, combo.multiplier) }))
-    .filter(jump => jump.analysis.possible)
+    .filter(jump => jump.analysis)
 }
 
 function update() {
@@ -49,7 +49,7 @@ function update() {
   )
 
   if (price > 0) {
-    setJumps(possibleJumps(revenue, company, price), price, rate)
+    setJumps(possibleJumps(revenue, company, price), rate)
   } else {
     clearJumps()
   }

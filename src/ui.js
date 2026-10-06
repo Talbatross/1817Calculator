@@ -137,7 +137,7 @@ export function clearJumps() {
 
 const fmtSigned = n => n < 0 ? `−$${Math.abs(n)}` : `$${n}`
 
-function renderDJPossibleBody(analysis, rate) {
+function renderJumpBody(analysis, rate) {
   const { originalPrice, adjustedPrice, cash, withheld, loansNeeded, existingInterest, newInterest, treasuryDividend, endCash } = analysis
 
   let loansHtml
@@ -170,19 +170,19 @@ function renderDJPossibleBody(analysis, rate) {
       </div>`
 }
 
-function renderJumpCard({ jumpLabel, payLabel, multiplier, analysis }, price, rate) {
+function renderJumpCard({ jumpLabel, payLabel, analysis }, rate) {
   return `
     <div class="dj__card">
-      <div class="dj__header dj__header--ok">
-        <span class="dj__title">${jumpLabel} — ${payLabel} (≥ $${price * multiplier} total)</span>
-        <span class="dj__status--ok">Possible ✓</span>
+      <div class="dj__header">
+        <span class="dj__title">${jumpLabel} — ${payLabel} (≥ ${analysis.baseTarget} total)</span>
+        <span class="dj__status">Possible ✓</span>
       </div>
-      <div class="dj__body">${renderDJPossibleBody(analysis, rate)}</div>
+      <div class="dj__body">${renderJumpBody(analysis, rate)}</div>
     </div>`
 }
 
-export function setJumps(possibleJumps, price, rate) {
+export function setJumps(possibleJumps, rate) {
   document.getElementById('jumps').innerHTML = possibleJumps.length
-    ? possibleJumps.map(jump => renderJumpCard(jump, price, rate)).join('')
+    ? possibleJumps.map(jump => renderJumpCard(jump, rate)).join('')
     : '<div class="dj__none">No jumps possible</div>'
 }

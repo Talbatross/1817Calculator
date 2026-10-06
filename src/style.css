@@ -232,13 +232,12 @@ select {
   justify-content: space-between;
   align-items: center;
   padding: 10px 16px;
+  background: #e8f5e9;
 }
-
-.dj__header--ok   { background: #e8f5e9; }
 
 .dj__title { font-weight: 600; color: #333; }
 
-.dj__status--ok   { color: #2e7d32; font-weight: bold; }
+.dj__status { color: #2e7d32; font-weight: bold; }
 
 .dj__body {
   padding: 8px 16px 12px;

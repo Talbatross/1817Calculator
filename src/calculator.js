@@ -74,6 +74,7 @@ export const STOCK_PRICES = [40, 45, 50, 55, 60, 65, 70, 80, 90, 100, 110, 120, 
 
 // effectiveRevenue: paid portion counted toward jump target (halfPay*shares for Half Pay, full revenue for Full Pay)
 // Dividends are paid from revenue (not company cash). endCash = cash + loanProceeds + withheld + treasuryDividend - interest
+// Returns the fewest-loan scenario that meets the target with endCash >= 0, or null if the jump is not possible.
 function analyzeJump(effectiveRevenue, rawRevenue, { shares, treasury, cash, existingLoans, rate }, price, multiplier) {
   const priceIndex = STOCK_PRICES.indexOf(price)
   const externalShares = shares - treasury
@@ -90,30 +91,18 @@ function analyzeJump(effectiveRevenue, rawRevenue, { shares, treasury, cash, exi
     const newInterest = newLoanCount * rate
     const endCash = cash + withheld + treasuryDividend - existingInterest - newInterest
     return {
-      originalPrice: price, adjustedPrice, totalTarget, targetPerShare,
-      cash, effectiveRevenue, withheld, loansNeeded: newLoanCount, maxNewLoans,
+      originalPrice: price, baseTarget: price * multiplier, adjustedPrice, totalTarget, targetPerShare,
+      cash, effectiveRevenue, withheld, loansNeeded: newLoanCount,
       externalShares, externalDividend, existingInterest, newInterest, endCash,
       treasuryDividend,
     }
   }
 
-  let bestFundable = null
-
   for (let newLoanCount = 0; newLoanCount <= maxNewLoans; newLoanCount++) {
     const scenario = buildScenario(newLoanCount)
-    if (effectiveRevenue < scenario.totalTarget) continue
-
-    if (scenario.endCash >= 0) return { possible: true, canFund: true, ...scenario }
-    if (bestFundable === null || scenario.endCash > bestFundable.endCash) bestFundable = scenario
+    if (effectiveRevenue >= scenario.totalTarget && scenario.endCash >= 0) return scenario
   }
-
-  const canFund = bestFundable !== null
-
-  if (!canFund) {
-    bestFundable = buildScenario(maxNewLoans)
-  }
-
-  return { possible: false, canFund, ...bestFundable }
+  return null
 }
 
 export function fullPayJumpAnalysis(revenue, company, price, multiplier) {
