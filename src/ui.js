@@ -131,8 +131,8 @@ export function clearShareTables() {
   document.getElementById('toggle-half').hidden = true
 }
 
-export function clearDoubleJump() {
-  document.getElementById('double-jump').innerHTML = ''
+export function clearJumps() {
+  document.getElementById('jumps').innerHTML = ''
 }
 
 const fmtSigned = n => n < 0 ? `−$${Math.abs(n)}` : `$${n}`
@@ -170,42 +170,19 @@ function renderDJPossibleBody(analysis, rate) {
       </div>`
 }
 
-function renderDJImpossibleBody(analysis, revenueLabel) {
-  const { canFund, effectiveRevenue, totalTarget, maxNewLoans, loansNeeded, originalPrice, adjustedPrice, endCash } = analysis
-
-  if (!canFund) {
-    return `<div class="dj__reason">${revenueLabel} ($${effectiveRevenue}) below target ($${totalTarget}) — loan capacity: ${maxNewLoans}</div>`
-  }
-  const loanNote = loansNeeded > 0
-    ? `${loansNeeded} loan${loansNeeded !== 1 ? 's' : ''} (price $${originalPrice} → $${adjustedPrice}), but `
-    : ''
-  return `<div class="dj__reason">${loanNote}remaining cash: ${fmtSigned(endCash)}</div>`
-}
-
-function renderDJCard(analysis, rate, payLabel) {
-  const { possible, totalTarget } = analysis
-
-  const headerClass = possible ? 'dj__header--ok' : 'dj__header--fail'
-  const statusClass = possible ? 'dj__status--ok' : 'dj__status--fail'
-  const statusText = possible ? 'Possible' : 'Not Possible'
-  const revenueLabel = payLabel === 'Half Pay' ? 'Half-pay' : 'Revenue'
-
-  const bodyHtml = possible
-    ? renderDJPossibleBody(analysis, rate)
-    : renderDJImpossibleBody(analysis, revenueLabel)
-
+function renderJumpCard({ jumpLabel, payLabel, multiplier, analysis }, price, rate) {
   return `
     <div class="dj__card">
-      <div class="dj__header ${headerClass}">
-        <span class="dj__title">${payLabel} Double Jump (≥ $${totalTarget} total)</span>
-        <span class="${statusClass}">${statusText}</span>
+      <div class="dj__header dj__header--ok">
+        <span class="dj__title">${jumpLabel} — ${payLabel} (≥ $${price * multiplier} total)</span>
+        <span class="dj__status--ok">Possible ✓</span>
       </div>
-      <div class="dj__body">${bodyHtml}</div>
+      <div class="dj__body">${renderDJPossibleBody(analysis, rate)}</div>
     </div>`
 }
 
-export function setDoubleJumps(fullAnalysis, halfAnalysis, rate) {
-  document.getElementById('double-jump').innerHTML =
-    renderDJCard(fullAnalysis, rate, 'Full Pay') +
-    renderDJCard(halfAnalysis, rate, 'Half Pay')
+export function setJumps(possibleJumps, price, rate) {
+  document.getElementById('jumps').innerHTML = possibleJumps.length
+    ? possibleJumps.map(jump => renderJumpCard(jump, price, rate)).join('')
+    : '<div class="dj__none">No jumps possible</div>'
 }

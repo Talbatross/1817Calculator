@@ -1,11 +1,24 @@
 import { fullPay, halfPay, withhold, fullPayCompany, halfPayCompany, withholdCompany, interest, fullPayCompanySteps, halfPayCompanySteps, withholdCompanySteps, fullPayJumpAnalysis, halfPayJumpAnalysis } from './calculator.js'
-import { getInputs, setResults, setCompanyBreakdowns, clearCompanyBreakdowns, setDoubleJumps, clearDoubleJump, setShareTables, clearShareTables, initToggleButtons } from './ui.js'
+import { getInputs, setResults, setCompanyBreakdowns, clearCompanyBreakdowns, setJumps, clearJumps, setShareTables, clearShareTables, initToggleButtons } from './ui.js'
 
 function formatShareResults(revenue, shares) {
   if (shares === 2) {
     return [`$${fullPay(revenue, shares) * shares} total`, `$${halfPay(revenue, shares) * shares} total`]
   }
   return [`$${fullPay(revenue, shares)}/share`, `$${halfPay(revenue, shares)}/share`]
+}
+
+const JUMP_COMBINATIONS = [
+  { jumpLabel: 'Double Jump', payLabel: 'Full Pay', multiplier: 2, analyze: fullPayJumpAnalysis },
+  { jumpLabel: 'Double Jump', payLabel: 'Half Pay', multiplier: 2, analyze: halfPayJumpAnalysis },
+  { jumpLabel: 'Single Jump', payLabel: 'Full Pay', multiplier: 1, analyze: fullPayJumpAnalysis },
+  { jumpLabel: 'Single Jump', payLabel: 'Half Pay', multiplier: 1, analyze: halfPayJumpAnalysis },
+]
+
+function possibleJumps(revenue, company, price) {
+  return JUMP_COMBINATIONS
+    .map(({ analyze, ...combo }) => ({ ...combo, analysis: analyze(revenue, company, price, combo.multiplier) }))
+    .filter(jump => jump.analysis.possible)
 }
 
 function update() {
@@ -20,7 +33,7 @@ function update() {
     setResults('—', '—', '—')
     clearCompanyBreakdowns()
     clearShareTables()
-    clearDoubleJump()
+    clearJumps()
     return
   }
 
@@ -36,13 +49,9 @@ function update() {
   )
 
   if (price > 0) {
-    setDoubleJumps(
-      fullPayJumpAnalysis(revenue, company, price, 2),
-      halfPayJumpAnalysis(revenue, company, price, 2),
-      rate
-    )
+    setJumps(possibleJumps(revenue, company, price), price, rate)
   } else {
-    clearDoubleJump()
+    clearJumps()
   }
 }
 
