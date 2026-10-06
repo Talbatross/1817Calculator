@@ -237,8 +237,6 @@ select {
 
 .dj__title { font-weight: 600; color: #333; }
 
-.dj__status { color: #2e7d32; font-weight: bold; }
-
 .dj__body {
   padding: 8px 16px 12px;
   font-size: 0.85rem;

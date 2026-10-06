@@ -174,8 +174,7 @@ function renderJumpCard({ jumpLabel, payLabel, analysis }, rate) {
   return `
     <div class="dj__card">
       <div class="dj__header">
-        <span class="dj__title">${jumpLabel} — ${payLabel} (≥ ${analysis.baseTarget} total)</span>
-        <span class="dj__status">Possible ✓</span>
+        <span class="dj__title">${jumpLabel} — ${payLabel} (≥ $${analysis.baseTarget} total)</span>
       </div>
       <div class="dj__body">${renderJumpBody(analysis, rate)}</div>
     </div>`
