@@ -3,7 +3,7 @@
 
 ## Overview
 
-Extend the existing Double Jump section to analyze both **Single Jumps** and **Double Jumps**. For each jump, show the best pay type (Full Pay or Half Pay) that achieves it.
+Extend the existing Double Jump section to analyze both **Single Jumps** and **Double Jumps** for both **Full Pay** and **Half Pay**. Show only the combinations that are possible.
 
 Supersedes the UI portion of `2026-06-29-double-jump-design.md`. The loan/price-step/cash mechanics in the current `analyzeDoubleJump` stay as they are.
 
@@ -16,16 +16,22 @@ The current analysis (in `calculator.js`) becomes generic over a jump multiplier
 
 The rest does not change: each new loan moves the price one step left on `STOCK_PRICES`; new loans are capped at `shares − existingLoans`; `endCash = cash + withheld + treasuryDividend − existingInterest − newInterest`; the jump is possible when the threshold is met and `endCash ≥ 0`, using the fewest loans that achieve it.
 
-## Choosing the Best Pay Type
+## Display
 
-For each jump, run the analysis for Full Pay and Half Pay, then pick:
+Four combinations are evaluated, in this order:
 
-1. Only pay types where `possible === true`
-2. Fewest `loansNeeded`
-3. Tie → higher `endCash`
-4. Still tied → Full Pay
+1. Double Jump — Full Pay
+2. Double Jump — Half Pay
+3. Single Jump — Full Pay
+4. Single Jump — Half Pay
 
-If neither is possible, there is no best option.
+- Each **possible** combination gets one card (green header, as now):
+  - Title: `<Jump> — <Pay Type> (≥ $X total)`, where X is the unadjusted target `price × multiplier`
+  - Status: `Possible ✓`
+  - Body: the existing loans line plus the remaining-cash breakdown (unchanged)
+- **Impossible** combinations are not rendered.
+- If **none** are possible, show a single line: `No jumps possible`.
+- The section stays hidden when price is unset or revenue is 0 (unchanged).
 
 ## Architecture
 
@@ -36,14 +42,14 @@ Pure math in `calculator.js`, DOM in `ui.js`, wiring in `main.js` (existing patt
 - Replace `fullPayDoubleJumpAnalysis` / `halfPayDoubleJumpAnalysis` with:
   - `fullPayJumpAnalysis(revenue, company, price, multiplier)`
   - `halfPayJumpAnalysis(revenue, company, price, multiplier)`
-- New `bestJumpOption(fullAnalysis, halfAnalysis)` → `{ payType: 'Full Pay' | 'Half Pay', analysis }` or `null`.
+
+### `main.js`
+- When `price > 0` and revenue > 0: build the list of four `{ jumpLabel, payLabel, multiplier, analysis }` entries in the order above, filter to `analysis.possible`, and pass the result to `setJumps(possibleJumps, price, rate)`. Otherwise call `clearJumps()`.
 
 ### `ui.js`
-- `setDoubleJumps` → `setJumps(singleJump, doubleJump, rate)`. Each argument is `{ label, totalTarget, best, full, half }`, where `full`/`half` are the analyses and `best` is the `bestJumpOption` result, already computed in `main.js`. `ui.js` does no math.
+- `setDoubleJumps` → `setJumps(possibleJumps, price, rate)`: renders one card per entry, or the `No jumps possible` line when the list is empty.
 - `clearDoubleJump` → `clearJumps`.
-- Card title: `Single Jump (≥ $X total)` / `Double Jump (≥ $Y total)`. X/Y is the unadjusted target (`price × multiplier`).
-- **Possible:** header status `Possible ✓ — <Pay Type>`; the body reuses the existing possible body (loans line + breakdown) for the chosen analysis.
-- **Not possible:** header status `Not Possible ✗`; the body has two reason lines, one per pay type, each prefixed `Full Pay: ` / `Half Pay: `, using the existing reason text.
+- Remove `renderDJImpossibleBody` (no longer used).
 
 ### `index.html`
 - Container `#double-jump` → `#jumps`.
@@ -51,24 +57,21 @@ Pure math in `calculator.js`, DOM in `ui.js`, wiring in `main.js` (existing patt
 
 ### `style.css`
 - Rename the `#double-jump` selectors to `#jumps`. Reuse the existing `.dj__*` card classes.
-
-### `main.js`
-- When `price > 0` and revenue > 0: compute full/half analyses for multipliers 1 and 2, resolve the best option for each, and call `setJumps`. Otherwise call `clearJumps`.
+- Add a muted style for the `No jumps possible` line (`.dj__none`).
 
 ## Edge Cases
 
-- If a double jump is possible, a single jump is too; both cards are still shown.
+- If a double jump is possible, the single jump for the same pay type is generally possible too; both are shown.
 - Price $40 (the floor): loans cannot lower the price further, so the existing behavior holds.
 - shares = 2: treasury is forced to 0, same as now.
-- Neither pay type possible: the card shows both reasons.
 
 ## Testing
 
 - Existing double-jump tests move to the new functions with `multiplier = 2`, and their expectations stay the same.
 - New single-jump tests (`multiplier = 1`): possible without loans, possible with a loan (price drop), not possible.
-- `bestJumpOption` tests: fewer loans wins; tie → more end cash wins; full tie → Full Pay; only one possible; neither possible → `null`.
 
 ## Out of Scope
 
 - Triple or greater jumps
 - Withhold (pays no dividend)
+- Explaining why a combination is impossible
